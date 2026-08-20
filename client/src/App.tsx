@@ -32,7 +32,7 @@ function MapView({ onSelect }: { onSelect: (id: string) => void }) {
     const map = L.map(mapElement.current, { zoomControl: false }).setView(mapCenter, 12)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map)
     L.control.zoom({ position: 'bottomright' }).addTo(map)
-    churches.forEach((church) => { const marker = L.marker([church.lat, church.lng]).addTo(map); marker.bindTooltip(church.name, { direction: 'top', offset: [0, -12] }); marker.on('click', () => onSelect(church.id)) })
+    churches.forEach((church) => { const marker = L.marker([church.lat, church.lng], { icon: L.divIcon({ className: 'church-marker-icon', html: '<span class="church-marker-pin"></span>', iconSize: [34, 42], iconAnchor: [17, 42] }) }).addTo(map); marker.bindTooltip(church.name, { direction: 'top', offset: [0, -36] }); marker.on('click', () => onSelect(church.id)) })
     mapRef.current = map
     return () => { map.remove(); mapRef.current = null }
   }, [onSelect])
