@@ -1,0 +1,48 @@
+import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAdminAuth } from './AdminAuth.tsx'
+
+export function AdminLogin() {
+  const { login } = useAdminAuth()
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+    setError('')
+    const success = await login(email, password)
+    if (success) {
+      navigate('/map')
+    } else {
+      setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง')
+    }
+  }
+
+  return (
+    <main className="admin-login-page">
+      <form className="admin-login-form" onSubmit={handleSubmit}>
+        <h1>เข้าสู่ระบบผู้ดูแลระบบ</h1>
+        <label htmlFor="email">อีเมล</label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <label htmlFor="password">รหัสผ่าน</label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {error && <p className="admin-login-error">{error}</p>}
+        <button type="submit">เข้าสู่ระบบ</button>
+      </form>
+    </main>
+  )
+}

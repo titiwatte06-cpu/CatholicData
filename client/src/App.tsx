@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { BrowserRouter, Link, Route, Routes, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './App.css'
 import { churches, type Church } from './data/churches'
+import { useAdminAuth } from './admin/AdminAuth.tsx'
 
 const mapCenter: L.LatLngExpression = [13.7563, 100.5018]
 
@@ -20,7 +21,7 @@ function MenuIcon({ children }: { children: ReactNode }) {
   return <svg className="menu-icon" viewBox="0 0 100 100" fill="none" aria-hidden="true">{children}</svg>
 }
 
-function HomePage() {
+export function HomePage() {
   return <main className="home-page"><section className="hero-menu"><p className="eyebrow">ขอเชิญทุกท่าน</p><h1>วัดคาทอลิก</h1><p className="hero-subtitle">“จงตามเรามา แล้วเราจะทำให้ท่านเป็นชาวประมงหามนุษย์”<br />ยินดีต้อนรับสู่บ้านหลังนี้ของทุกคน</p><div className="gold-rule" /><nav className="menu-windows" aria-label="เมนูหลัก">{menuItems.map((item) => <Link className="menu-window" key={item.to} to={item.to} aria-label={item.title}><span className="window-frame"><span className="window-finial" /><MenuIcon>{item.icon}</MenuIcon><span className="window-label"><strong>{item.title}</strong><small>{item.english}</small></span></span></Link>)}</nav><Link className="map-entry" to="/map">ดูแผนที่และตารางมิสซา <span aria-hidden="true">↗</span></Link></section></main>
 }
 
@@ -51,22 +52,81 @@ function ChurchDetail({ church }: { church: Church }) {
   return <section className="detail"><Link className="back-btn" to="/map">← กลับไปยังรายการวัด</Link><h2>{church.name}</h2><p className="detail-en">{church.nameEn}</p><span className="district">{church.district}</span><InfoBlock label="เวลาเปิด-ปิดวัด">{church.openHours}</InfoBlock><InfoBlock label="ตารางมิสซ"><table><tbody>{church.massSchedule.map((row) => <tr key={row.day}><th>{row.day}</th><td>{row.times.join(' · ')} น.</td></tr>)}</tbody></table></InfoBlock><InfoBlock label="คุณพ่อเจ้าอาวาส">{church.priest}</InfoBlock><InfoBlock label="ที่อยู่">{church.address}</InfoBlock><a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer">↗ นำทางด้วย Google Maps</a></section>
 }
 
-function MapPage() {
+export function MapPage() {
   const { churchId } = useParams()
   const navigate = useNavigate()
+  const { isAuthenticated } = useAdminAuth() 
   const [query, setQuery] = useState('')
   const selectedChurch = churches.find((church) => church.id === churchId)
   const filteredChurches = churches.filter((church) => `${church.name} ${church.nameEn} ${church.district}`.toLowerCase().includes(query.toLowerCase()))
   const selectChurch = useCallback((id: string) => navigate(`/map/church/${id}`), [navigate])
-  return <div className="map-page"><header className="map-header"><Link to="/" className="map-brand"><span>✚</span><strong>วัดคาทอลิก</strong></Link><Link to="/" className="map-home-link">หน้าแรก</Link></header><div className="map-layout"><aside className="map-sidebar"><h1>วัดคาทอลิกกรุงเทพฯ</h1>{!selectedChurch && <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ค้นหาชื่อวัด" aria-label="ค้นหาวัด" />}{selectedChurch ? <ChurchDetail church={selectedChurch} /> : <div className="church-list">{filteredChurches.length ? filteredChurches.map((church) => <ChurchCard key={church.id} church={church} />) : <p className="no-results">ไม่พบวัดที่ค้นหา</p>}</div>}</aside><main className="map-wrap"><MapView onSelect={selectChurch} /></main></div></div>
+  return <div className="map-page">
+    <header className="map-header">
+    <Link to="/" className="map-brand"><span>✚</span><strong>วัดคาทอลิก</strong></Link>
+    <nav className="map-header-actions">
+      <Link to="/" className="map-home-link">หน้าแรก</Link>
+      <Link to="/admin/login" className="map-admin-link">ผู้ดูแลระบบ</Link>
+    </nav>
+  </header>
+    <div className="map-layout">
+    <aside className="map-sidebar">
+  <h1>วัดคาทอลิกกรุงเทพฯ</h1>
+  {!selectedChurch && (
+    <>
+      <input
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="ค้นหาชื่อวัด"
+        aria-label="ค้นหาวัด"
+      />
+      
+        <div className="sidebar-actions">
+          <button
+            type="button"
+            className="sidebar-action-btn sidebar-action-add"
+            onClick={() => {
+              if (!isAuthenticated) {
+                navigate('/admin/login')
+                return
+              }
+              /* TODO: เปิดฟอร์มเพิ่มวัด */
+            }}
+          >
+            <span aria-hidden="true">+</span> เพิ่มข้อมูล
+          </button>
+          <button
+            type="button"
+            className="sidebar-action-btn sidebar-action-remove"
+            onClick={() => {
+              if (!isAuthenticated) {
+                navigate('/admin/login')
+                return
+              }
+              /* TODO: เปิดโหมดลบวัด */
+            }}
+          >
+            <span aria-hidden="true">−</span> ลบข้อมูล
+          </button>
+        </div>
+      
+    </>
+  )}
+  {selectedChurch ? (
+    <ChurchDetail church={selectedChurch} />
+  ) : (
+    <div className="church-list">
+      {filteredChurches.length ? (
+        filteredChurches.map((church) => <ChurchCard key={church.id} church={church} />)
+      ) : (
+        <p className="no-results">ไม่พบวัดที่ค้นหา</p>
+      )}
+    </div>
+  )}
+</aside>
+      <main className="map-wrap"><MapView onSelect={selectChurch} /></main></div>
+    </div>
 }
 
-function ContentPage({ title, english }: { title: string; english: string }) {
+export function ContentPage({ title, english }: { title: string; english: string }) {
   return <main className="content-page"><Link to="/" className="content-back">← กลับหน้าแรก</Link><p className="eyebrow">{english}</p><h1>{title}</h1><p>หน้านี้เตรียมไว้สำหรับข้อมูลในหมวดนี้ และสามารถเติมเนื้อหาต่อได้ในอนาคต</p></main>
 }
-
-function App() {
-  return <BrowserRouter><Routes><Route path="/" element={<HomePage />} /><Route path="/map" element={<MapPage />} /><Route path="/map/church/:churchId" element={<MapPage />} /><Route path="/sermons" element={<ContentPage title="บทเทศน์" english="Sermons" />} /><Route path="/about" element={<ContentPage title="เกี่ยวกับเรา" english="About Us" />} /><Route path="/news" element={<ContentPage title="ข่าว & กิจกรรม" english="News & Events" />} /><Route path="/contact" element={<ContentPage title="ติดต่อเรา" english="Contact" />} /><Route path="*" element={<HomePage />} /></Routes></BrowserRouter>
-}
-
-export default App
