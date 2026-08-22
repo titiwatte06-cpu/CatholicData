@@ -1,4 +1,10 @@
-export type MassSchedule = { day: string; times: string[] }
+export type MassTimeEntry = string | { time: string; durationMinutes: number }
+
+export type MassSchedule = {
+  day: string
+  times: MassTimeEntry[]
+  durationMinutes?: number // ระยะเวลา default ของทุกรอบในแถวนี้ (ถ้าไม่ตั้งจะใช้ของวัด หรือ 60 นาที)
+}
 
 export type Church = {
   id: string
@@ -10,6 +16,7 @@ export type Church = {
   lng: number
   openHours: string
   priest: string
+  defaultMassDurationMinutes?: number // ระยะเวลา default ของทั้งวัด
   massSchedule: MassSchedule[]
 }
 
