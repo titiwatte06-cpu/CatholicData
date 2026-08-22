@@ -273,7 +273,8 @@ function DeleteChurchModal({ direct, onClose }: { direct: boolean; onClose: () =
 export function MapPage() {
   const { churchId } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated } = useAdminAuth() 
+  const { isAuthenticated, logout } = useAdminAuth()
+  const [showUserMenu, setShowUserMenu] = useState(false)
   const [query, setQuery] = useState('')
   const [activeModal, setActiveModal] = useState<'add' | 'delete' | null>(null)
   const now = useMinuteTick()
@@ -284,8 +285,27 @@ export function MapPage() {
     <header className="map-header">
     <Link to="/" className="map-brand"><span>✚</span><strong>วัดคาทอลิก</strong></Link>
     <nav className="map-header-actions">
-      <Link to="/" className="map-home-link">หน้าแรก</Link>
-      <Link to="/admin/login" className="map-admin-link">ผู้ดูแลระบบ</Link>
+      {!isAuthenticated && <Link to="/" className="map-home-link">หน้าแรก</Link>}
+      {isAuthenticated ? (
+        <div className="map-user-menu">
+          <div className="map-user-avatar" aria-label="เมนูผู้ใช้" />
+          <div className="map-user-dropdown">
+            <Link to="/" className="map-user-dropdown-item">หน้าแรก</Link>
+            <button
+              type="button"
+              className="map-user-dropdown-item"
+              onClick={async () => {
+                await logout()
+                navigate('/')
+              }}
+            >
+              ออกจากระบบ
+            </button>
+          </div>
+        </div>
+      ) : (
+        <Link to="/admin/login" className="map-admin-link">ผู้ดูแลระบบ</Link>
+      )}
     </nav>
   </header>
     <div className="map-layout">
