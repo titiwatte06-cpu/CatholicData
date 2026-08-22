@@ -5,6 +5,17 @@ import 'leaflet/dist/leaflet.css'
 import './App.css'
 import { churches, type Church } from './data/churches'
 import { useAdminAuth } from './admin/AdminAuth.tsx'
+import { getMassAlert } from './utils/massAlert'
+
+function useMinuteTick(intervalMs = 30000) {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), intervalMs)
+    return () => clearInterval(id)
+  }, [intervalMs])
+  return now
+}
+
 
 const mapCenter: L.LatLngExpression = [13.7563, 100.5018]
 
@@ -25,7 +36,7 @@ export function HomePage() {
   return <main className="home-page"><section className="hero-menu"><p className="eyebrow">ขอเชิญทุกท่าน</p><h1>วัดคาทอลิก</h1><p className="hero-subtitle">“จงตามเรามา แล้วเราจะทำให้ท่านเป็นชาวประมงหามนุษย์”<br />ยินดีต้อนรับสู่บ้านหลังนี้ของทุกคน</p><div className="gold-rule" /><nav className="menu-windows" aria-label="เมนูหลัก">{menuItems.map((item) => <Link className="menu-window" key={item.to} to={item.to} aria-label={item.title}><span className="window-frame"><span className="window-finial" /><MenuIcon>{item.icon}</MenuIcon><span className="window-label"><strong>{item.title}</strong><small>{item.english}</small></span></span></Link>)}</nav><Link className="map-entry" to="/map">ดูแผนที่และตารางมิสซา <span aria-hidden="true">↗</span></Link></section></main>
 }
 
-function MapView({ onSelect }: { onSelect: (id: string) => void }) {
+function MapView({ onSelect, now }: { onSelect: (id: string) => void; now: Date }) {
   const mapElement = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   useEffect(() => {
@@ -33,15 +44,34 @@ function MapView({ onSelect }: { onSelect: (id: string) => void }) {
     const map = L.map(mapElement.current, { zoomControl: false }).setView(mapCenter, 12)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map)
     L.control.zoom({ position: 'bottomright' }).addTo(map)
-    churches.forEach((church) => { const marker = L.marker([church.lat, church.lng], { icon: L.divIcon({ className: 'church-marker-icon', html: '<span class="church-marker-pin"></span>', iconSize: [34, 42], iconAnchor: [17, 42] }) }).addTo(map); marker.bindTooltip(church.name, { direction: 'top', offset: [0, -36] }); marker.on('click', () => onSelect(church.id)) })
+    churches.forEach((church) => {
+      const alert = getMassAlert(church, now)
+      const marker = L.marker([church.lat, church.lng], {
+        icon: L.divIcon({
+          className: `church-marker-icon ${alert.active ? 'is-open' : ''}`,
+          html: `<span class="church-marker-pin"></span>${alert.active ? `<span class="church-marker-badge">มิสซา ${alert.time} น.</span>` : ''}`,
+          iconSize: [34, 42],
+          iconAnchor: [17, 42],
+        }),
+      }).addTo(map)
+      marker.bindTooltip(church.name, { direction: 'top', offset: [0, -36] })
+      marker.on('click', () => onSelect(church.id))
+    })
     mapRef.current = map
     return () => { map.remove(); mapRef.current = null }
-  }, [onSelect])
+  }, [onSelect, now])
   return <div ref={mapElement} className="map" aria-label="แผนที่วัดคาทอลิกในกรุงเทพฯ" />
 }
 
-function ChurchCard({ church }: { church: Church }) {
-  return <Link className="church-card" to={`/map/church/${church.id}`}><span className="card-pin">+</span><span className="card-body"><strong>{church.name}</strong><small>{church.district}</small></span></Link>
+function ChurchCard({ church, now }: { church: Church; now: Date }) {
+  const alert = getMassAlert(church, now)
+  return (
+    <Link className="church-card" to={`/map/church/${church.id}`}>
+      <span className="card-pin">+</span>
+      <span className="card-body"><strong>{church.name}</strong><small>{church.district}</small></span>
+      {alert.active && <span className="church-open-badge">มิสซา {alert.time} น.</span>}
+    </Link>
+  )
 }
 
 function InfoBlock({ label, children }: { label: string; children: ReactNode }) {
@@ -246,6 +276,7 @@ export function MapPage() {
   const { isAuthenticated } = useAdminAuth() 
   const [query, setQuery] = useState('')
   const [activeModal, setActiveModal] = useState<'add' | 'delete' | null>(null)
+  const now = useMinuteTick()
   const selectedChurch = churches.find((church) => church.id === churchId)
   const filteredChurches = churches.filter((church) => `${church.name} ${church.nameEn} ${church.district}`.toLowerCase().includes(query.toLowerCase()))
   const selectChurch = useCallback((id: string) => navigate(`/map/church/${id}`), [navigate])
@@ -289,18 +320,18 @@ export function MapPage() {
     </>
   )}
   {selectedChurch ? (
-    <ChurchDetail church={selectedChurch} />
-  ) : (
-    <div className="church-list">
-      {filteredChurches.length ? (
-        filteredChurches.map((church) => <ChurchCard key={church.id} church={church} />)
-      ) : (
-        <p className="no-results">ไม่พบวัดที่ค้นหา</p>
-      )}
-    </div>
-  )}
+  <ChurchDetail church={selectedChurch} />
+    ) : (
+      <div className="church-list">
+        {filteredChurches.length ? (
+          filteredChurches.map((church) => <ChurchCard key={church.id} church={church} now={now} />)
+        ) : (
+          <p className="no-results">ไม่พบวัดที่ค้นหา</p>
+        )}
+      </div>
+    )}
 </aside>
-      <main className="map-wrap"><MapView onSelect={selectChurch} /></main></div>
+      <main className="map-wrap"><MapView onSelect={selectChurch} now={now} /></main></div>
     {activeModal === 'add' && <AddChurchModal direct={isAuthenticated} onClose={() => setActiveModal(null)} />}
     {activeModal === 'delete' && <DeleteChurchModal direct={isAuthenticated} onClose={() => setActiveModal(null)} />}
     </div>
