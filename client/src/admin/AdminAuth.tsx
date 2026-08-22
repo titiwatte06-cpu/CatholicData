@@ -1,44 +1,50 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 type AdminAuthContextType = {
   isAuthenticated: boolean
+  loading: boolean
   login: (email: string, password: string) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
-const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined)
+const AdminAuthContext = createContext<AdminAuthContextType | null>(null)
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    () => localStorage.getItem('admin_token') === 'true'
-  )
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((res) => setIsAuthenticated(res.ok))
+      .finally(() => setLoading(false))
+  }, [])
 
   const login = async (email: string, password: string) => {
-    // TODO: เปลี่ยนตรงนี้เป็นการเรียก API จริงเพื่อตรวจสอบ email/password
-    if (email && password) {
-      localStorage.setItem('admin_token', 'true')
-      setIsAuthenticated(true)
-      return true
-    }
-    return false
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    })
+    const ok = res.ok
+    setIsAuthenticated(ok)
+    return ok
   }
 
-  const logout = () => {
-    localStorage.removeItem('admin_token')
+  const logout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     setIsAuthenticated(false)
   }
 
   return (
-    <AdminAuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AdminAuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
       {children}
     </AdminAuthContext.Provider>
   )
 }
 
 export function useAdminAuth() {
-  const context = useContext(AdminAuthContext)
-  if (context === undefined) {
-    throw new Error('useAdminAuth must be used within AdminAuthProvider')
-  }
-  return context
+  const ctx = useContext(AdminAuthContext)
+  if (!ctx) throw new Error('useAdminAuth must be used within AdminAuthProvider')
+  return ctx
 }

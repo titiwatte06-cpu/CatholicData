@@ -8,11 +8,14 @@ export function AdminLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     setError('')
+    setSubmitting(true)
     const success = await login(email, password)
+    setSubmitting(false)
     if (success) {
       navigate('/map')
     } else {
@@ -41,7 +44,7 @@ export function AdminLogin() {
           required
         />
         {error && <p className="admin-login-error">{error}</p>}
-        <button type="submit">เข้าสู่ระบบ</button>
+        <button type="submit" disabled={submitting}>{submitting ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}</button>
       </form>
     </main>
   )
