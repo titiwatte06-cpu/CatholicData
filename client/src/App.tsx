@@ -6,6 +6,7 @@ import './App.css'
 import { type Church } from './data/churches'
 import { useAdminAuth } from './admin/AdminAuth.tsx'
 import { getMassAlert } from './utils/massAlert'
+import { API_BASE_URL } from './config'
 
 const mapCenter: L.LatLngExpression = [13.7563, 100.5018]
 
@@ -103,11 +104,28 @@ type AddChurchFormState = {
   lat: string
   lng: string
   priest: string
-  mass:string
+  mass: string
   openHours: string
 }
 
-const emptyAddForm: AddChurchFormState = { name: '', nameEn: '', district: '', address: '', lat: '', lng: '', priest: '',mass:'', openHours: '' }
+const emptyAddForm: AddChurchFormState = { name: '', nameEn: '', district: '', address: '', lat: '', lng: '', priest: '', mass: '', openHours: '' }
+
+// แปลงข้อความช่อง "ตารางมิสซา" เช่น "จันทร์ - เสาร์: 06:00, 18:00; อาทิตย์: 07:00, 09:00, 18:00"
+// ให้เป็น massSchedule array ตามโครงสร้างที่ backend ต้องการ
+function parseMassScheduleInput(raw: string): { day: string; times: string[] }[] {
+  return raw
+    .split(';')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const [day, timesPart] = entry.split(':')
+      return {
+        day: (day ?? '').trim(),
+        times: (timesPart ?? '').split(',').map((t) => t.trim()).filter(Boolean),
+      }
+    })
+    .filter((row) => row.day && row.times.length > 0)
+}
 
 function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClose: () => void; onSuccess?: () => void }) {
   const [form, setForm] = useState<AddChurchFormState>(emptyAddForm)
@@ -130,17 +148,17 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
       lng: Number(form.lng),
       priest: form.priest,
       openHours: form.openHours,
-      massSchedule: [],
+      massSchedule: parseMassScheduleInput(form.mass),
     }
     try {
       const res = direct
-        ? await fetch('/api/churches', {
+        ? await fetch(`${API_BASE_URL}/api/churches`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify(proposedData),
           })
-        : await fetch('/api/church-requests', {
+        : await fetch(`${API_BASE_URL}/api/church-requests`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: 'add', proposedData, reason }),
@@ -192,7 +210,12 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
           <input value={form.priest} onChange={updateField('priest')} />
         </label>
         <label>ตารางมิสซา
-          <input value={form.mass} onChange={updateField('mass')} />
+          <input
+            value={form.mass}
+            onChange={updateField('mass')}
+            placeholder="จันทร์ - เสาร์: 06:00, 18:00; อาทิตย์: 07:00, 09:00, 18:00"
+          />
+          <small className="field-hint">คั่นแต่ละวันด้วย ; และคั่นแต่ละเวลาในวันเดียวกันด้วย , (ไม่กรอกก็ได้ ถ้ายังไม่มีข้อมูล)</small>
         </label>
         <label>เวลาเปิด-ปิด
           <input value={form.openHours} onChange={updateField('openHours')} placeholder="เช่น 06:00 - 19:00 น. ทุกวัน" />
@@ -222,8 +245,8 @@ function DeleteChurchModal({ direct, churches, onClose, onSuccess }: { direct: b
     setStatus('saving')
     try {
       const res = direct
-        ? await fetch(`/api/churches/${targetId}`, { method: 'DELETE', credentials: 'include' })
-        : await fetch('/api/church-requests', {
+        ? await fetch(`${API_BASE_URL}/api/churches/${targetId}`, { method: 'DELETE', credentials: 'include' })
+        : await fetch(`${API_BASE_URL}/api/church-requests`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: 'delete', targetChurchId: targetId, reason }),
@@ -283,7 +306,7 @@ export function MapPage() {
 
   const fetchChurches = useCallback(async () => {
     try {
-      const res = await fetch('/api/churches')
+      const res = await fetch(`${API_BASE_URL}/api/churches`)
       if (!res.ok) throw new Error('failed to fetch churches')
       const data: Church[] = await res.json()
       setChurches(data)

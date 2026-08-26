@@ -376,7 +376,18 @@
   background-color: #f2f2f2;
 }
 
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  color: #5c6470;
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 @media (max-width: 480px) {
   .modal-box { padding: 22px 18px 20px; }
   .form-row { flex-direction: column; gap: 14px; }
 }
+
