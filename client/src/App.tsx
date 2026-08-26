@@ -295,9 +295,11 @@ function DeleteChurchModal({ direct, churches, onClose, onSuccess }: { direct: b
 export function MapPage() {
   const { churchId } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated } = useAdminAuth()
+  const { isAuthenticated, logout } = useAdminAuth()   // ⬅️ เพิ่ม logout เข้ามา (ของเดิมดึงแค่ isAuthenticated)
   const [query, setQuery] = useState('')
   const [activeModal, setActiveModal] = useState<'add' | 'delete' | null>(null)
+  const [showUserMenu, setShowUserMenu] = useState(false)   // ⬅️ เพิ่มใหม่
+  const userMenuRef = useRef<HTMLDivElement>(null)          // ⬅️ เพิ่มใหม่
   const now = useMinuteTick()
 
   const [churches, setChurches] = useState<Church[]>([])
@@ -322,6 +324,21 @@ export function MapPage() {
     fetchChurches()
   }, [fetchChurches])
 
+  // ⬅️ เพิ่มใหม่ทั้งบล็อกนี้ — ปิด dropdown เมื่อแตะ/คลิกข้างนอก (จำเป็นสำหรับมือถือ เพราะ hover ใช้ไม่ได้)
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [])
+
   const selectedChurch = churches.find((church) => church.id === churchId)
   const filteredChurches = churches.filter((church) => `${church.name} ${church.nameEn} ${church.district}`.toLowerCase().includes(query.toLowerCase()))
   const selectChurch = useCallback((id: string) => navigate(`/map/church/${id}`), [navigate])
@@ -331,8 +348,43 @@ export function MapPage() {
       <header className="map-header">
         <Link to="/" className="map-brand"><span>✚</span><strong>วัดคาทอลิก</strong></Link>
         <nav className="map-header-actions">
-          <Link to="/" className="map-home-link">หน้าแรก</Link>
-          <Link to="/admin/login" className="map-admin-link">ผู้ดูแลระบบ</Link>
+          {/* ⬇️ เปลี่ยนใหม่ทั้งบล็อกนี้ — เดิมโชว์ "หน้าแรก" + "ผู้ดูแลระบบ" ตลอด ไม่เช็ค isAuthenticated เลย */}
+          {!isAuthenticated && <Link to="/" className="map-home-link">หน้าแรก</Link>}
+          {isAuthenticated ? (
+            <div className="map-user-menu" ref={userMenuRef}>
+              <button
+                type="button"
+                className="map-user-avatar"
+                onClick={() => setShowUserMenu((prev) => !prev)}
+                aria-label="เมนูผู้ใช้"
+                aria-expanded={showUserMenu}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.3 0-9.8 1.6-9.8 4.9v2.5h19.6v-2.5c0-3.3-6.5-4.9-9.8-4.9z" fill="currentColor" />
+                </svg>
+              </button>
+              {showUserMenu && (
+                <div className="map-user-dropdown">
+                  <Link to="/" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>หน้าแรก</Link>
+                  <Link to="/admin" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>ผู้ดูแลระบบ</Link>
+                  <button
+                    type="button"
+                    className="map-user-dropdown-item"
+                    onClick={async () => {
+                      setShowUserMenu(false)
+                      await logout()
+                      navigate('/')
+                    }}
+                  >
+                    ออกจากระบบ
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/admin/login" className="map-admin-link">ผู้ดูแลระบบ</Link>
+          )}
+          {/* ⬆️ เปลี่ยนใหม่จบตรงนี้ */}
         </nav>
       </header>
       <div className="map-layout">
