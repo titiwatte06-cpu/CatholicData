@@ -78,8 +78,9 @@ function InfoBlock({ label, children }: { label: string; children: ReactNode }) 
   return <div className="detail-block"><div className="detail-label">{label}</div><div className="detail-value">{children}</div></div>
 }
 
-function ChurchDetail({ church }: { church: Church }) {
-  return <section className="detail"><Link className="back-btn" to="/map">← กลับไปยังรายการวัด</Link><h2>{church.name}</h2><p className="detail-en">{church.nameEn}</p><span className="district">{church.district}</span><InfoBlock label="เวลาเปิด-ปิดวัด">{church.openHours}</InfoBlock><InfoBlock label="ตารางมิสซ"><table><tbody>{church.massSchedule.map((row) => <tr key={row.day}><th>{row.day}</th><td>{row.times.join(' · ')} น.</td></tr>)}</tbody></table></InfoBlock><InfoBlock label="คุณพ่อเจ้าอาวาส">{church.priest}</InfoBlock><InfoBlock label="ที่อยู่">{church.address}</InfoBlock><a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer">↗ นำทางด้วย Google Maps</a></section>
+// ⬇️ เพิ่มใหม่: รับ onEditClick + canEditDirectly เข้ามา และแทรกปุ่ม "แก้ไขข้อมูล" ก่อนปุ่มนำทาง
+function ChurchDetail({ church, onEditClick, canEditDirectly }: { church: Church; onEditClick: () => void; canEditDirectly: boolean }) {
+  return <section className="detail"><Link className="back-btn" to="/map">← กลับไปยังรายการวัด</Link><h2>{church.name}</h2><p className="detail-en">{church.nameEn}</p><span className="district">{church.district}</span><InfoBlock label="เวลาเปิด-ปิดวัด">{church.openHours}</InfoBlock><InfoBlock label="ตารางมิสซ"><table><tbody>{church.massSchedule.map((row) => <tr key={row.day}><th>{row.day}</th><td>{row.times.join(' · ')} น.</td></tr>)}</tbody></table></InfoBlock><InfoBlock label="คุณพ่อเจ้าอาวาส">{church.priest}</InfoBlock><InfoBlock label="ที่อยู่">{church.address}</InfoBlock><button type="button" className="edit-detail-btn" onClick={onEditClick}>✎ {canEditDirectly ? 'แก้ไขข้อมูล' : 'เสนอแก้ไขข้อมูล'}</button><a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer">↗ นำทางด้วย Google Maps</a></section>
 }
 
 function Modal({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
@@ -125,6 +126,26 @@ function parseMassScheduleInput(raw: string): { day: string; times: string[] }[]
       }
     })
     .filter((row) => row.day && row.times.length > 0)
+}
+
+// ⬇️ เพิ่มใหม่: แปลง massSchedule ที่มีอยู่แล้วกลับเป็นข้อความ ให้ขึ้นมาในฟอร์มตอนกดแก้ไข
+function serializeMassSchedule(massSchedule: Church['massSchedule']): string {
+  return massSchedule.map((row) => `${row.day}: ${row.times.join(', ')}`).join('; ')
+}
+
+// ⬇️ เพิ่มใหม่: เตรียมค่าเริ่มต้นของฟอร์มแก้ไขจากข้อมูลวัดที่เลือกอยู่
+function buildFormFromChurch(church: Church): AddChurchFormState {
+  return {
+    name: church.name,
+    nameEn: church.nameEn,
+    district: church.district,
+    address: church.address,
+    lat: String(church.lat),
+    lng: String(church.lng),
+    priest: church.priest,
+    mass: serializeMassSchedule(church.massSchedule),
+    openHours: church.openHours,
+  }
 }
 
 function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClose: () => void; onSuccess?: () => void }) {
@@ -234,6 +255,113 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
   )
 }
 
+// ⬇️ เพิ่มใหม่ทั้งฟังก์ชันนี้ — โครงเดียวกับ AddChurchModal แต่ยิง PUT แทน POST และมีค่าเริ่มต้นจากวัดเดิม
+function EditChurchModal({ direct, church, onClose, onSuccess }: { direct: boolean; church: Church; onClose: () => void; onSuccess?: () => void }) {
+  const [form, setForm] = useState<AddChurchFormState>(() => buildFormFromChurch(church))
+  const [reason, setReason] = useState('')
+  const [status, setStatus] = useState<'idle' | 'saving' | 'done' | 'error'>('idle')
+
+  const updateField = (key: keyof AddChurchFormState) => (event: ChangeEvent<HTMLInputElement>) =>
+    setForm((current) => ({ ...current, [key]: event.target.value }))
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+    setStatus('saving')
+    const proposedData = {
+      name: form.name,
+      nameEn: form.nameEn,
+      district: form.district,
+      address: form.address,
+      lat: Number(form.lat),
+      lng: Number(form.lng),
+      priest: form.priest,
+      openHours: form.openHours,
+      massSchedule: parseMassScheduleInput(form.mass),
+    }
+    try {
+      const res = direct
+        ? await fetch(`${API_BASE_URL}/api/churches/${church.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(proposedData),
+          })
+        : await fetch(`${API_BASE_URL}/api/church-requests`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'edit', targetChurchId: church.id, proposedData, reason }),
+          })
+      if (!res.ok) throw new Error('request failed')
+      onSuccess?.()
+      setStatus('done')
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  if (status === 'done') {
+    return (
+      <Modal title={direct ? 'แก้ไขข้อมูลวัด' : 'ส่งคำขอแก้ไขข้อมูลวัด'} onClose={onClose}>
+        <p className="modal-success">
+          {direct ? 'บันทึกการแก้ไขเรียบร้อยแล้ว' : 'ส่งคำขอแก้ไขเรียบร้อยแล้ว ขอบคุณครับ ทีมงานจะตรวจสอบและดำเนินการต่อไป'}
+        </p>
+        <button type="button" className="modal-primary-btn" onClick={onClose}>ปิดหน้าต่าง</button>
+      </Modal>
+    )
+  }
+
+  return (
+    <Modal title={direct ? `แก้ไขข้อมูลวัด: ${church.name}` : `เสนอแก้ไขข้อมูลวัด: ${church.name}`} onClose={onClose}>
+      <form className="church-form" onSubmit={handleSubmit}>
+        {!direct && <p className="modal-hint">แก้ไขเฉพาะช่องที่ต้องการเปลี่ยน ทีมงานจะตรวจสอบก่อนนำไปปรับปรุงจริง</p>}
+        <label>ชื่อวัด (ไทย)
+          <input value={form.name} onChange={updateField('name')} required />
+        </label>
+        <label>ชื่อวัด (English)
+          <input value={form.nameEn} onChange={updateField('nameEn')} required />
+        </label>
+        <label>เขต
+          <input value={form.district} onChange={updateField('district')} required />
+        </label>
+        <label>ที่อยู่
+          <input value={form.address} onChange={updateField('address')} required />
+        </label>
+        <div className="form-row">
+          <label>ละติจูด (lat)
+            <input value={form.lat} onChange={updateField('lat')} inputMode="decimal" required />
+          </label>
+          <label>ลองจิจูด (lng)
+            <input value={form.lng} onChange={updateField('lng')} inputMode="decimal" required />
+          </label>
+        </div>
+        <label>คุณพ่อเจ้าอาวาส
+          <input value={form.priest} onChange={updateField('priest')} />
+        </label>
+        <label>ตารางมิสซา
+          <input
+            value={form.mass}
+            onChange={updateField('mass')}
+            placeholder="จันทร์ - เสาร์: 06:00, 18:00; อาทิตย์: 07:00, 09:00, 18:00"
+          />
+          <small className="field-hint">คั่นแต่ละวันด้วย ; และคั่นแต่ละเวลาในวันเดียวกันด้วย ,</small>
+        </label>
+        <label>เวลาเปิด-ปิด
+          <input value={form.openHours} onChange={updateField('openHours')} placeholder="เช่น 06:00 - 19:00 น. ทุกวัน" />
+        </label>
+        {!direct && (
+          <label>เหตุผล / แหล่งที่มาของข้อมูล (ไม่บังคับ)
+            <textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={2} />
+          </label>
+        )}
+        {status === 'error' && <p className="modal-error">เกิดข้อผิดพลาด ลองใหม่อีกครั้งครับ</p>}
+        <button type="submit" className="modal-primary-btn" disabled={status === 'saving'}>
+          {status === 'saving' ? 'กำลังบันทึก...' : direct ? 'บันทึกการแก้ไข' : 'ส่งคำขอ'}
+        </button>
+      </form>
+    </Modal>
+  )
+}
+
 function DeleteChurchModal({ direct, churches, onClose, onSuccess }: { direct: boolean; churches: Church[]; onClose: () => void; onSuccess?: () => void }) {
   const [targetId, setTargetId] = useState('')
   const [reason, setReason] = useState('')
@@ -297,7 +425,7 @@ export function MapPage() {
   const navigate = useNavigate()
   const { isAuthenticated, logout } = useAdminAuth()   // ⬅️ เพิ่ม logout เข้ามา (ของเดิมดึงแค่ isAuthenticated)
   const [query, setQuery] = useState('')
-  const [activeModal, setActiveModal] = useState<'add' | 'delete' | null>(null)
+  const [activeModal, setActiveModal] = useState<'add' | 'delete' | 'edit' | null>(null)   // ⬅️ แก้: เพิ่ม 'edit' เข้าไปใน type
   const [showUserMenu, setShowUserMenu] = useState(false)   // ⬅️ เพิ่มใหม่
   const userMenuRef = useRef<HTMLDivElement>(null)          // ⬅️ เพิ่มใหม่
   const now = useMinuteTick()
@@ -412,7 +540,7 @@ export function MapPage() {
             </>
           )}
           {selectedChurch ? (
-            <ChurchDetail church={selectedChurch} />
+            <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAuthenticated} />
           ) : (
             <div className="church-list">
               {loadingChurches ? (
@@ -431,6 +559,7 @@ export function MapPage() {
       </div>
       {activeModal === 'add' && <AddChurchModal direct={isAuthenticated} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
       {activeModal === 'delete' && <DeleteChurchModal direct={isAuthenticated} churches={churches} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
+      {activeModal === 'edit' && selectedChurch && <EditChurchModal direct={isAuthenticated} church={selectedChurch} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
     </div>
   )
 }

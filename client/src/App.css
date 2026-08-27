@@ -386,6 +386,24 @@
   letter-spacing: normal;
 }
 
+.edit-detail-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 10px;
+  padding: 10px;
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  background: transparent;
+  color: #7a5a1e;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.edit-detail-btn:hover { background: var(--gold); color: white; }
+
 @media (max-width: 480px) {
   .modal-box { padding: 22px 18px 20px; }
   .form-row { flex-direction: column; gap: 14px; }
