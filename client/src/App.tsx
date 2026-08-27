@@ -119,10 +119,12 @@ function parseMassScheduleInput(raw: string): { day: string; times: string[] }[]
     .map((entry) => entry.trim())
     .filter(Boolean)
     .map((entry) => {
-      const [day, timesPart] = entry.split(':')
+      const separatorIndex = entry.indexOf(':')   // ⬅️ หาตำแหน่ง : ตัวแรกเท่านั้น ไม่ใช้ split ทั้งเส้น
+      const day = separatorIndex === -1 ? entry : entry.slice(0, separatorIndex)
+      const timesPart = separatorIndex === -1 ? '' : entry.slice(separatorIndex + 1)
       return {
-        day: (day ?? '').trim(),
-        times: (timesPart ?? '').split(',').map((t) => t.trim()).filter(Boolean),
+        day: day.trim(),
+        times: timesPart.split(',').map((t) => t.trim()).filter(Boolean),
       }
     })
     .filter((row) => row.day && row.times.length > 0)
