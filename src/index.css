@@ -1,0 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap');
+@import 'tailwindcss';
+
+:root { font-family: 'Jost', sans-serif; color: #f3ead9; background: #0a1524; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+html, body, #root { width: 100%; min-height: 100%; margin: 0; }
+body { overflow-x: hidden; }
+a { color: inherit; }
+button, input { font: inherit; }
