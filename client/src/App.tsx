@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './App.css'
+import '../public/logo.svg'
 import { type Church } from './data/churches'
 import { useAdminAuth } from './admin/AdminAuth.tsx'
 import { getMassAlert } from './utils/massAlert'
@@ -477,7 +478,7 @@ export function MapPage() {
   return (
     <div className="map-page">
       <header className="map-header">
-        <Link to="/" className="map-brand"><span>✚</span><strong>วัดคาทอลิก</strong></Link>
+        <Link to="/" className="map-brand"><img src="/logo.svg" alt="โลโก้" className="map-logo" /><strong>วัดคาทอลิก</strong></Link>
         <nav className="map-header-actions">
           {/* ⬇️ เปลี่ยนใหม่ทั้งบล็อกนี้ — เดิมโชว์ "หน้าแรก" + "ผู้ดูแลระบบ" ตลอด ไม่เช็ค isAuthenticated เลย */}
           {!isAuthenticated && <Link to="/" className="map-home-link">หน้าแรก</Link>}
