@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './App.css'
-import '../public/logo.svg'
+import logo from '../src/assets/logo.svg';
+
 import { type Church } from './data/churches'
 import { useAdminAuth } from './admin/AdminAuth.tsx'
 import { getMassAlert } from './utils/massAlert'
@@ -34,7 +35,51 @@ function MenuIcon({ children }: { children: ReactNode }) {
 }
 
 export function HomePage() {
-  return <main className="home-page"><section className="hero-menu"><p className="eyebrow">ขอเชิญทุกท่าน</p><h1>วัดคาทอลิก</h1><p className="hero-subtitle">"จงตามเรามา แล้วเราจะทำให้ท่านเป็นชาวประมงหามนุษย์"<br />ยินดีต้อนรับสู่บ้านหลังนี้ของทุกคน</p><div className="gold-rule" /><nav className="menu-windows" aria-label="เมนูหลัก">{menuItems.map((item) => <Link className="menu-window" key={item.to} to={item.to} aria-label={item.title}><span className="window-frame"><span className="window-finial" /><MenuIcon>{item.icon}</MenuIcon><span className="window-label"><strong>{item.title}</strong><small>{item.english}</small></span></span></Link>)}</nav><Link className="map-entry" to="/map">ดูแผนที่และตารางมิสซา <span aria-hidden="true">↗</span></Link></section></main>
+  return (
+    <main className="home-page">
+      <header className="home-topbar">
+        <span className="home-brand">
+          <img src={logo} alt="วัดคาทอลิก" className="home-logo" />
+          
+        </span>
+        <button type="button" className="home-btn home-btn-outline">
+          ติดต่อเรา
+        </button>
+      </header>
+
+      <section className="home-hero">
+        <span className="home-badge">ขอเชิญทุกท่าน</span>
+        <h1>วัดคาทอลิก</h1>
+        <div className="home-divider" />
+        <p className="home-subtitle">
+          "จงตามเรามา แล้วเราจะทำให้ท่านเป็นชาวประมงมนุษย์"
+          <br />
+          ยินดีต้อนรับสู่บ้านหลังนี้ของทุกคน
+        </p>
+
+        <div className="home-cta-row">
+          <Link to="/map" className="home-btn home-btn-solid">
+            ดูตารางมิสซา
+          </Link>
+          <button type="button" className="home-btn home-btn-outline">
+            เรียนรู้เพิ่มเติม
+          </button>
+        </div>
+
+        <nav className="home-feature-grid" aria-label="เมนูหลัก">
+          {menuItems.map((item) => (
+            <Link className="home-feature-card" key={item.to} to={item.to} aria-label={item.title}>
+              <span className="home-feature-icon">
+                <MenuIcon>{item.icon}</MenuIcon>
+              </span>
+              <span className="home-feature-title">{item.title}</span>
+              <span className="home-feature-subtitle">{item.english}</span>
+            </Link>
+          ))}
+        </nav>
+      </section>
+    </main>
+  );
 }
 
 function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; now: Date; churches: Church[] }) {
