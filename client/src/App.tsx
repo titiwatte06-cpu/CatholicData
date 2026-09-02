@@ -49,7 +49,7 @@ export function HomePage() {
 
       <section className="home-hero">
         <span className="home-badge">ขอเชิญทุกท่าน</span>
-        <h1>วัดคาทอลิก</h1>
+        <h1>The Shepherd</h1>
         <div className="home-divider" />
         <p className="home-subtitle">
           "จงตามเรามา แล้วเราจะทำให้ท่านเป็นชาวประมงมนุษย์"
