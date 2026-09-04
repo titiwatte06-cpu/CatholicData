@@ -2,13 +2,13 @@
    Design tokens
    ============================================================ */
 :root {
-  --ink: #101d30;
-  --deep: #0a1524;
-  --gold: #b6883c;
-  --gold-light: #e8cd8f;
-  --parchment: #f3ead9;
-  --muted: rgba(243, 234, 217, 0.72);
-  --line: rgba(182, 136, 60, 0.45);
+  --ink: #f4f4f4;                    /* เดิม #101d30 — ตอนนี้เป็นพื้นผิวรอง (การ์ด) สีเทาอ่อนแทนกรมท่าเข้ม */
+  --deep: #ffffff;                   /* เดิม #0a1524 — ตอนนี้เป็นพื้นหลังหลักของหน้า (ขาว) */
+  --gold: #b6883c;                   /* ไม่เปลี่ยน — ยังใช้เป็น accent เดิม */
+  --gold-light: #e8cd8f;             /* ไม่เปลี่ยน — ยังใช้เป็น accent สว่างเดิม */
+  --parchment: #101d30;              /* เดิม #f3ead9 — ตอนนี้เป็นสีตัวอักษรหลัก (เกือบดำ) */
+  --muted: rgba(16, 29, 48, 0.65);   /* เดิม rgba(243,234,217,.72) — ตัวอักษรรองบนพื้นขาว */
+  --line: rgba(182, 136, 60, 0.45);  /* ไม่เปลี่ยน — ยังเป็นเส้นกรอบสีทองจางๆ สำหรับจุด accent เช่น badge */
 }
  
 /* ===== White theme — HomePage ===== */
@@ -138,12 +138,14 @@
   align-items: center;
   gap: 14px;
   padding: 32px 16px;
+  aspect-ratio: 1 / 1.15;   /* แทน min-height */
+  justify-content: center;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   background: #ffffff;
   text-decoration: none;
   color: inherit;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, borde...
 }
 
 .home-feature-card:hover {
@@ -235,8 +237,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: var(--ink);
-  color: var(--parchment);
+  background: #0a0a0a;   /* เดิม var(--ink) — เปลี่ยนเป็นดำตรงๆ */
+  color: #ffffff;         /* เดิม var(--parchment) — ต้องเปลี่ยนด้วย! */
 }
  
 .map-brand {
