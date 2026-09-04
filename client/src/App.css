@@ -6,7 +6,7 @@
   --deep: #ffffff;                   /* เดิม #0a1524 — ตอนนี้เป็นพื้นหลังหลักของหน้า (ขาว) */
   --gold: #b6883c;                   /* ไม่เปลี่ยน — ยังใช้เป็น accent เดิม */
   --gold-light: #e8cd8f;             /* ไม่เปลี่ยน — ยังใช้เป็น accent สว่างเดิม */
-  --parchment: #101d30;              /* เดิม #f3ead9 — ตอนนี้เป็นสีตัวอักษรหลัก (เกือบดำ) */
+  --parchment: #000000;              /* เดิม #f3ead9 — ตอนนี้เป็นสีตัวอักษรหลัก (เกือบดำ) */
   --muted: rgba(16, 29, 48, 0.65);   /* เดิม rgba(243,234,217,.72) — ตัวอักษรรองบนพื้นขาว */
   --line: rgba(182, 136, 60, 0.45);  /* ไม่เปลี่ยน — ยังเป็นเส้นกรอบสีทองจางๆ สำหรับจุด accent เช่น badge */
 }
@@ -16,7 +16,7 @@
 .home-page {
   min-height: 100svh;
   background: #ffffff;
-  color: #0f172a;
+  color: #000000;
 }
 
 /* --- Top bar --- */
@@ -34,7 +34,7 @@
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: #0f172a;
+  color: #000000;
 }
 
 .home-logo {
@@ -64,14 +64,14 @@
 
 .home-btn-solid {
   border: none;
-  background: #0f172a;
+  background: #000000;
   color: #ffffff;
 }
 
 .home-btn-outline {
-  border: 1px solid #0f172a;
+  border: 1px solid #000000;
   background: transparent;
-  color: #0f172a;
+  color: #000000;
 }
 
 /* --- Hero --- */
@@ -97,14 +97,14 @@
   font-size: clamp(40px, 6vw, 64px);
   font-weight: 800;
   line-height: 1.1;
-  color: #0f172a;
+  color: #000000;
 }
 
 .home-divider {
   width: 48px;
   height: 3px;
   margin-bottom: 22px;
-  background: #0f172a;
+  background: #000000;
   border-radius: 2px;
 }
 
@@ -161,7 +161,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #0f172a;
+  background: #000000;
 }
 
 .home-feature-icon .menu-icon {
@@ -176,7 +176,7 @@
 .home-feature-title {
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: #000000;
 }
 
 .home-feature-subtitle {
