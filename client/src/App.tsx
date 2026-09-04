@@ -9,6 +9,7 @@ import { type Church } from './data/churches'
 import { useAdminAuth } from './admin/AdminAuth.tsx'
 import { getMassAlert } from './utils/massAlert'
 import { API_BASE_URL } from './config'
+import { useLanguage } from './LanguageContext'
 
 const mapCenter: L.LatLngExpression = [13.7563, 100.5018]
 
@@ -34,7 +35,6 @@ function MenuIcon({ children }: { children: ReactNode }) {
   return <svg className="menu-icon" viewBox="0 0 100 100" fill="none" aria-hidden="true">{children}</svg>
 }
 
-type Lang = 'th' | 'en'
 
 const homeText = {
   th: {
@@ -53,8 +53,37 @@ const homeText = {
   },
 }
 
+const mapText = {
+  th: {
+    home: 'หน้าแรก',
+    admin: 'ผู้ดูแลระบบ',
+    logout: 'ออกจากระบบ',
+    heading: 'วัดคาทอลิกกรุงเทพฯ',
+    searchPlaceholder: 'ค้นหาชื่อวัด',
+    add: '+ เพิ่มข้อมูล',
+    remove: '− ลบข้อมูล',
+    hint: 'การเพิ่ม/ลบข้อมูลจะถูกส่งเป็นคำขอให้ทีมงานตรวจสอบก่อน',
+    loading: 'กำลังโหลดข้อมูลวัด...',
+    loadError: 'โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชหน้าใหม่',
+    noResults: 'ไม่พบวัดที่ค้นหา',
+  },
+  en: {
+    home: 'Home',
+    admin: 'Admin',
+    logout: 'Log out',
+    heading: 'Catholic Churches in Bangkok',
+    searchPlaceholder: 'Search church name',
+    add: '+ Add',
+    remove: '− Delete',
+    hint: 'Add/delete requests will be reviewed by our team before being applied.',
+    loading: 'Loading churches...',
+    loadError: 'Failed to load. Please refresh.',
+    noResults: 'No churches found',
+  },
+}
+
 export function HomePage() {
-  const [lang, setLang] = useState<Lang>('th')
+  const { lang, toggleLang } = useLanguage()
   const t = homeText[lang]
 
   return (
@@ -66,7 +95,7 @@ export function HomePage() {
         <button
           type="button"
           className="home-btn home-btn-outline home-lang-btn"
-          onClick={() => setLang((prev) => (prev === 'th' ? 'en' : 'th'))}
+          onClick={toggleLang}
         >
           {lang === 'th' ? 'EN' : 'Thai'}
         </button>
@@ -100,7 +129,6 @@ export function HomePage() {
               <span className="home-feature-title">
                 {lang === 'th' ? item.title : item.english}
               </span>
-              
             </Link>
           ))}
         </nav>
@@ -499,11 +527,13 @@ function DeleteChurchModal({ direct, churches, onClose, onSuccess }: { direct: b
 export function MapPage() {
   const { churchId } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated, logout } = useAdminAuth()   // ⬅️ เพิ่ม logout เข้ามา (ของเดิมดึงแค่ isAuthenticated)
+  const { isAuthenticated, logout } = useAdminAuth()
+  const { lang, toggleLang } = useLanguage()
+  const tm = mapText[lang]
   const [query, setQuery] = useState('')
-  const [activeModal, setActiveModal] = useState<'add' | 'delete' | 'edit' | null>(null)   // ⬅️ แก้: เพิ่ม 'edit' เข้าไปใน type
-  const [showUserMenu, setShowUserMenu] = useState(false)   // ⬅️ เพิ่มใหม่
-  const userMenuRef = useRef<HTMLDivElement>(null)          // ⬅️ เพิ่มใหม่
+  const [activeModal, setActiveModal] = useState<'add' | 'delete' | 'edit' | null>(null)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
   const now = useMinuteTick()
 
   const [churches, setChurches] = useState<Church[]>([])
@@ -528,7 +558,6 @@ export function MapPage() {
     fetchChurches()
   }, [fetchChurches])
 
-  // ⬅️ เพิ่มใหม่ทั้งบล็อกนี้ — ปิด dropdown เมื่อแตะ/คลิกข้างนอก (จำเป็นสำหรับมือถือ เพราะ hover ใช้ไม่ได้)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent | TouchEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -552,8 +581,7 @@ export function MapPage() {
       <header className="map-header">
         <Link to="/" className="map-brand"><img src="/logo.svg" alt="โลโก้" className="map-logo" /><strong>วัดคาทอลิก</strong></Link>
         <nav className="map-header-actions">
-          {/* ⬇️ เปลี่ยนใหม่ทั้งบล็อกนี้ — เดิมโชว์ "หน้าแรก" + "ผู้ดูแลระบบ" ตลอด ไม่เช็ค isAuthenticated เลย */}
-          {!isAuthenticated && <Link to="/" className="map-home-link">หน้าแรก</Link>}
+          {!isAuthenticated && <Link to="/" className="map-home-link">{tm.home}</Link>}
           {isAuthenticated ? (
             <div className="map-user-menu" ref={userMenuRef}>
               <button
@@ -569,8 +597,8 @@ export function MapPage() {
               </button>
               {showUserMenu && (
                 <div className="map-user-dropdown">
-                  <Link to="/" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>หน้าแรก</Link>
-                  <Link to="/admin" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>ผู้ดูแลระบบ</Link>
+                  <Link to="/" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{tm.home}</Link>
+                  <Link to="/admin" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{tm.admin}</Link>
                   <button
                     type="button"
                     className="map-user-dropdown-item"
@@ -580,38 +608,44 @@ export function MapPage() {
                       navigate('/')
                     }}
                   >
-                    ออกจากระบบ
+                    {tm.logout}
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <Link to="/admin/login" className="map-admin-link">ผู้ดูแลระบบ</Link>
+            <Link to="/admin/login" className="map-admin-link">{tm.admin}</Link>
           )}
-          {/* ⬆️ เปลี่ยนใหม่จบตรงนี้ */}
+          <button
+            type="button"
+            className="home-btn home-btn-outline home-lang-btn"
+            onClick={toggleLang}
+          >
+            {lang === 'th' ? 'EN' : 'Thai'}
+          </button>
         </nav>
       </header>
       <div className="map-layout">
         <aside className="map-sidebar">
-          <h1>วัดคาทอลิกกรุงเทพฯ</h1>
+          <h1>{tm.heading}</h1>
           {!selectedChurch && (
             <>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="ค้นหาชื่อวัด"
-                aria-label="ค้นหาวัด"
+                placeholder={tm.searchPlaceholder}
+                aria-label={tm.searchPlaceholder}
               />
               <div className="sidebar-actions">
                 <button type="button" className="sidebar-action-btn sidebar-action-add" onClick={() => setActiveModal('add')}>
-                  <span aria-hidden="true">+</span> เพิ่มข้อมูล
+                  {tm.add}
                 </button>
                 <button type="button" className="sidebar-action-btn sidebar-action-remove" onClick={() => setActiveModal('delete')}>
-                  <span aria-hidden="true">−</span> ลบข้อมูล
+                  {tm.remove}
                 </button>
               </div>
               {!isAuthenticated && (
-                <p className="sidebar-hint">การเพิ่ม/ลบข้อมูลจะถูกส่งเป็นคำขอให้ทีมงานตรวจสอบก่อน</p>
+                <p className="sidebar-hint">{tm.hint}</p>
               )}
             </>
           )}
@@ -620,13 +654,13 @@ export function MapPage() {
           ) : (
             <div className="church-list">
               {loadingChurches ? (
-                <p className="no-results">กำลังโหลดข้อมูลวัด...</p>
+                <p className="no-results">{tm.loading}</p>
               ) : fetchError ? (
-                <p className="no-results">โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชหน้าใหม่</p>
+                <p className="no-results">{tm.loadError}</p>
               ) : filteredChurches.length ? (
                 filteredChurches.map((church) => <ChurchCard key={church.id} church={church} now={now} />)
               ) : (
-                <p className="no-results">ไม่พบวัดที่ค้นหา</p>
+                <p className="no-results">{tm.noResults}</p>
               )}
             </div>
           )}
