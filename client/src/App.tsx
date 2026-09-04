@@ -34,35 +34,60 @@ function MenuIcon({ children }: { children: ReactNode }) {
   return <svg className="menu-icon" viewBox="0 0 100 100" fill="none" aria-hidden="true">{children}</svg>
 }
 
+type Lang = 'th' | 'en'
+
+const homeText = {
+  th: {
+    eyebrow: 'ขอเชิญทุกท่าน',
+    subtitle1: '"จงตามเรามา แล้วเราจะทำให้ท่านเป็นชาวประมงมนุษย์"',
+    subtitle2: 'ยินดีต้อนรับสู่บ้านหลังนี้ของทุกคน',
+    ctaSolid: 'ดูตารางมิสซา',
+    ctaOutline: 'เรียนรู้เพิ่มเติม',
+  },
+  en: {
+    eyebrow: 'Welcome all',
+    subtitle1: '"Follow me, and I will make you fishers of men"',
+    subtitle2: "Welcome to everyone's home",
+    ctaSolid: 'View Mass Schedule',
+    ctaOutline: 'Learn More',
+  },
+}
+
 export function HomePage() {
+  const [lang, setLang] = useState<Lang>('th')
+  const t = homeText[lang]
+
   return (
     <main className="home-page">
       <header className="home-topbar">
         <span className="home-brand">
           <img src={logo} alt="วัดคาทอลิก" className="home-logo" />
-          
         </span>
-        <button type="button" className="home-btn home-btn-outline">
-          ติดต่อเรา
+        <button
+          type="button"
+          className="home-btn home-btn-outline home-lang-btn"
+          onClick={() => setLang((prev) => (prev === 'th' ? 'en' : 'th'))}
+        >
+          {lang === 'th' ? 'EN' : 'Thai'}
         </button>
       </header>
 
       <section className="home-hero">
-        <span className="home-badge">ขอเชิญทุกท่าน</span>
+        <span className="home-badge">{t.eyebrow}</span>
         <h1>The Shepherd</h1>
         <div className="home-divider" />
         <p className="home-subtitle">
-          "จงตามเรามา แล้วเราจะทำให้ท่านเป็นชาวประมงมนุษย์"
+          {t.subtitle1}
           <br />
-          ยินดีต้อนรับสู่บ้านหลังนี้ของทุกคน
+          {t.subtitle2}
         </p>
 
         <div className="home-cta-row">
           <Link to="/map" className="home-btn home-btn-solid">
-            ดูตารางมิสซา
+            {t.ctaSolid}
           </Link>
           <button type="button" className="home-btn home-btn-outline">
-            เรียนรู้เพิ่มเติม
+            {t.ctaOutline}
           </button>
         </div>
 
@@ -72,8 +97,10 @@ export function HomePage() {
               <span className="home-feature-icon">
                 <MenuIcon>{item.icon}</MenuIcon>
               </span>
-              <span className="home-feature-title">{item.title}</span>
-              <span className="home-feature-subtitle">{item.english}</span>
+              <span className="home-feature-title">
+                {lang === 'th' ? item.title : item.english}
+              </span>
+              
             </Link>
           ))}
         </nav>
