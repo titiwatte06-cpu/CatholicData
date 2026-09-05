@@ -82,6 +82,32 @@ const mapText = {
   },
 }
 
+// ⬅️ แก้ตรงนี้ (จุดที่ 1): เพิ่ม dictionary ใหม่สำหรับ label ในหน้า ChurchDetail
+const detailText = {
+  th: {
+    back: '← กลับไปยังรายการวัด',
+    openHours: 'เวลาเปิด-ปิดวัด',
+    massSchedule: 'ตารางมิสซา',
+    priest: 'คุณพ่อเจ้าอาวาส',
+    address: 'ที่อยู่',
+    editDirect: 'แก้ไขข้อมูล',
+    editRequest: 'เสนอแก้ไขข้อมูล',
+    directions: '↗ นำทางด้วย Google Maps',
+    timeUnit: ' น.',
+  },
+  en: {
+    back: '← Back to church list',
+    openHours: 'Opening Hours',
+    massSchedule: 'Mass Schedule',
+    priest: 'Parish Priest',
+    address: 'Address',
+    editDirect: 'Edit Information',
+    editRequest: 'Suggest an Edit',
+    directions: '↗ Get Directions via Google Maps',
+    timeUnit: '',
+  },
+}
+
 export function HomePage() {
   const { lang, toggleLang } = useLanguage()
   const t = homeText[lang]
@@ -164,12 +190,18 @@ function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; 
   return <div ref={mapElement} className="map" aria-label="แผนที่วัดคาทอลิกในกรุงเทพฯ" />
 }
 
-function ChurchCard({ church, now }: { church: Church; now: Date }) {
+function ChurchCard({ church, now, lang }: { church: Church; now: Date; lang: 'th' | 'en' }) {
   const alert = getMassAlert(church, now)
+  const primaryName = lang === 'th' ? church.name : church.nameEn
+  const secondaryName = null   // ⬅️ แก้ตรงนี้ — เดิมเป็น `lang === 'th' ? church.nameEn : null` ตอนนี้ null เสมอ ไม่โชว์ชื่อคู่ภาษาเลย
   return (
     <Link className="church-card" to={`/map/church/${church.id}`}>
       <span className="card-pin">+</span>
-      <span className="card-body"><strong>{church.name}</strong><small>{church.district}</small></span>
+      <span className="card-body">
+        <strong>{primaryName}</strong>
+        {secondaryName && <small className="card-name-en">{secondaryName}</small>}
+        <small>{church.district}</small>
+      </span>
       {alert.active && <span className="church-open-badge">มิสซา {alert.time} น.</span>}
     </Link>
   )
@@ -179,9 +211,27 @@ function InfoBlock({ label, children }: { label: string; children: ReactNode }) 
   return <div className="detail-block"><div className="detail-label">{label}</div><div className="detail-value">{children}</div></div>
 }
 
-// ⬇️ เพิ่มใหม่: รับ onEditClick + canEditDirectly เข้ามา และแทรกปุ่ม "แก้ไขข้อมูล" ก่อนปุ่มนำทาง
-function ChurchDetail({ church, onEditClick, canEditDirectly }: { church: Church; onEditClick: () => void; canEditDirectly: boolean }) {
-  return <section className="detail"><Link className="back-btn" to="/map">← กลับไปยังรายการวัด</Link><h2>{church.name}</h2><p className="detail-en">{church.nameEn}</p><span className="district">{church.district}</span><InfoBlock label="เวลาเปิด-ปิดวัด">{church.openHours}</InfoBlock><InfoBlock label="ตารางมิสซ"><table><tbody>{church.massSchedule.map((row) => <tr key={row.day}><th>{row.day}</th><td>{row.times.join(' · ')} น.</td></tr>)}</tbody></table></InfoBlock><InfoBlock label="คุณพ่อเจ้าอาวาส">{church.priest}</InfoBlock><InfoBlock label="ที่อยู่">{church.address}</InfoBlock><button type="button" className="edit-detail-btn" onClick={onEditClick}>✎ {canEditDirectly ? 'แก้ไขข้อมูล' : 'เสนอแก้ไขข้อมูล'}</button><a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer">↗ นำทางด้วย Google Maps</a></section>
+// ⬅️ แก้ตรงนี้ (จุดที่ 2): รับ lang เข้ามา, ใช้ detailText[lang] แทน label ที่ hardcode ไว้เดิม, สลับ primary/secondary name
+function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: Church; onEditClick: () => void; canEditDirectly: boolean; lang: 'th' | 'en' }) {
+  const td = detailText[lang]
+  const primaryName = lang === 'th' ? church.name : church.nameEn
+  const secondaryName = lang === 'th' ? church.nameEn : null
+  return (
+    <section className="detail">
+      <Link className="back-btn" to="/map">{td.back}</Link>
+      <h2>{primaryName}</h2>
+      {secondaryName && <p className="detail-en">{secondaryName}</p>}
+      <span className="district">{church.district}</span>
+      <InfoBlock label={td.openHours}>{church.openHours}</InfoBlock>
+      <InfoBlock label={td.massSchedule}>
+        <table><tbody>{church.massSchedule.map((row) => <tr key={row.day}><th>{row.day}</th><td>{row.times.join(' · ')}{td.timeUnit}</td></tr>)}</tbody></table>
+      </InfoBlock>
+      <InfoBlock label={td.priest}>{church.priest}</InfoBlock>
+      <InfoBlock label={td.address}>{church.address}</InfoBlock>
+      <button type="button" className="edit-detail-btn" onClick={onEditClick}>✎ {canEditDirectly ? td.editDirect : td.editRequest}</button>
+      <a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer">{td.directions}</a>
+    </section>
+  )
 }
 
 function Modal({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
@@ -650,7 +700,8 @@ export function MapPage() {
             </>
           )}
           {selectedChurch ? (
-            <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAuthenticated} />
+            // ⬅️ แก้ตรงนี้ (จุดที่ 3): เพิ่ม lang={lang} เข้าไปตอนเรียก ChurchDetail
+            <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAuthenticated} lang={lang} />
           ) : (
             <div className="church-list">
               {loadingChurches ? (
@@ -658,7 +709,7 @@ export function MapPage() {
               ) : fetchError ? (
                 <p className="no-results">{tm.loadError}</p>
               ) : filteredChurches.length ? (
-                filteredChurches.map((church) => <ChurchCard key={church.id} church={church} now={now} />)
+                filteredChurches.map((church) => <ChurchCard key={church.id} church={church} now={now} lang={lang} />)
               ) : (
                 <p className="no-results">{tm.noResults}</p>
               )}
