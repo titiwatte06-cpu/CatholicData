@@ -128,8 +128,9 @@ export function HomePage() {
       </header>
 
       <section className="home-hero">
-        <span className="home-badge">{t.eyebrow}</span>
-        <h1>The Shepherd</h1>
+        
+        
+        <img src="/IHSicon.svg" alt="IHS" className="home-hero-logo"/>
         <div className="home-divider" />
         <p className="home-subtitle">
           {t.subtitle1}
