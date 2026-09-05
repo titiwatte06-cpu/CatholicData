@@ -85,7 +85,7 @@
 
 .home-hero-logo {
   display: block;
-  width: clamp(120px, 30vw, 420px);
+  width: clamp(160px, 40vw, 480px);
   height: auto;
   aspect-ratio: 1 / 1;
   margin: 0 auto 8px;
