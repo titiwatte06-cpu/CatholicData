@@ -10,6 +10,10 @@ import { useAdminAuth } from './admin/AdminAuth.tsx'
 import { getMassAlert } from './utils/massAlert'
 import { API_BASE_URL } from './config'
 import { useLanguage } from './LanguageContext'
+// ...existing code...
+import { SermonsPage, SermonDetailPage } from './pages/Sermons'
+// ...existing code...
+
 
 const mapCenter: L.LatLngExpression = [13.7563, 100.5018]
 
