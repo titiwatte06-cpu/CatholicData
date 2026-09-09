@@ -11,7 +11,6 @@ import { getMassAlert } from './utils/massAlert'
 import { API_BASE_URL } from './config'
 import { useLanguage } from './LanguageContext'
 // ...existing code...
-import { SermonsPage, SermonDetailPage } from './pages/Sermons'
 // ...existing code...
 
 

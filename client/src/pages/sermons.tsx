@@ -101,7 +101,7 @@ const sermonText = {
 
 function SermonLayout({ children }: { children: ReactNode }) {
   const { lang, toggleLang } = useLanguage()
-  const t = sermonText[lang]
+
 
   return (
     <main className="content-page">
