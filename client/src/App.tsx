@@ -12,7 +12,8 @@ import { API_BASE_URL } from './config'
 import { useLanguage } from './LanguageContext'
 // ...existing code...
 // ...existing code...
-
+import { RegionFilter } from './components/RegionFilter'
+import type { Region } from './data/churches'
 
 const mapCenter: L.LatLngExpression = [13.7563, 100.5018]
 
@@ -594,6 +595,17 @@ export function MapPage() {
   const [loadingChurches, setLoadingChurches] = useState(true)
   const [fetchError, setFetchError] = useState(false)
 
+  // ⬇️ เพิ่มใหม่: state เก็บภาคที่เลือก (เซ็ตว่าง = แสดงทุกภาค กันหน้าว่างเปล่าตอนเปิดหน้าครั้งแรก)
+  const [selectedRegions, setSelectedRegions] = useState<Set<Region>>(new Set())
+
+  const toggleRegion = useCallback((region: Region) => {
+    setSelectedRegions((prev) => {
+      const next = new Set(prev)
+      next.has(region) ? next.delete(region) : next.add(region)
+      return next
+    })
+  }, [])
+
   const fetchChurches = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/churches`)
@@ -627,7 +639,16 @@ export function MapPage() {
   }, [])
 
   const selectedChurch = churches.find((church) => church.id === churchId)
-  const filteredChurches = churches.filter((church) => `${church.name} ${church.nameEn} ${church.district}`.toLowerCase().includes(query.toLowerCase()))
+
+  // ⬇️ แก้ตรงนี้: กรองตามภาคก่อน แล้วค่อยกรองตาม query ค้นหาต่อ (สองชั้น)
+  const regionFilteredChurches = selectedRegions.size === 0
+    ? churches
+    : churches.filter((church) => selectedRegions.has(church.region))
+
+  const filteredChurches = regionFilteredChurches.filter((church) =>
+    `${church.name} ${church.nameEn} ${church.district}`.toLowerCase().includes(query.toLowerCase())
+  )
+
   const selectChurch = useCallback((id: string) => navigate(`/map/church/${id}`), [navigate])
 
   return (
@@ -684,6 +705,8 @@ export function MapPage() {
           <h1>{tm.heading}</h1>
           {!selectedChurch && (
             <>
+              {/* ⬇️ เพิ่มใหม่: แถบปุ่ม toggle เลือกภาค วางไว้เหนือช่องค้นหา */}
+              <RegionFilter selected={selectedRegions} onToggle={toggleRegion} lang={lang} />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -704,7 +727,6 @@ export function MapPage() {
             </>
           )}
           {selectedChurch ? (
-            // ⬅️ แก้ตรงนี้ (จุดที่ 3): เพิ่ม lang={lang} เข้าไปตอนเรียก ChurchDetail
             <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAuthenticated} lang={lang} />
           ) : (
             <div className="church-list">
@@ -720,7 +742,8 @@ export function MapPage() {
             </div>
           )}
         </aside>
-        <main className="map-wrap"><MapView onSelect={selectChurch} now={now} churches={churches} /></main>
+        {/* ⬇️ แก้ตรงนี้: ส่ง regionFilteredChurches แทน churches — แผนที่โชว์ตามภาคที่เลือก แต่ไม่ผูกกับ query ค้นหาชื่อ (ตามภาพที่ต้องการ) */}
+        <main className="map-wrap"><MapView onSelect={selectChurch} now={now} churches={regionFilteredChurches} /></main>
       </div>
       {activeModal === 'add' && <AddChurchModal direct={isAuthenticated} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
       {activeModal === 'delete' && <DeleteChurchModal direct={isAuthenticated} churches={churches} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
