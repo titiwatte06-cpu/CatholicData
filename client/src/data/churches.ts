@@ -70,6 +70,7 @@ export type Church = {
   id: string
   name: string
   nameEn: string
+  imageUrl?: string
   district: string
   address: string
   addressEn?: string

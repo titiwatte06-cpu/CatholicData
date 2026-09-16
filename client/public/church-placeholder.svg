@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-labelledby="title desc">
+  <title id="title">Church image unavailable</title>
+  <desc id="desc">Placeholder shown when a church image has not been added</desc>
+  <rect width="1200" height="600" fill="#eee8da"/>
+  <path d="M510 430V260h180v170M470 430h260M560 260v-75h80v75M600 130v55M575 155h50" fill="none" stroke="#8a6a3f" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="600" y="510" text-anchor="middle" font-family="sans-serif" font-size="32" fill="#6d604d">Church image unavailable</text>
+</svg>

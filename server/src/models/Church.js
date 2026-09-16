@@ -10,6 +10,7 @@ const churchSchema = new mongoose.Schema({
   id: { type: String, unique: true, required: true, index: true },
   name: String,
   nameEn: String,
+  imageUrl: String,
   district: String,
   address: String,
   addressEn: String,

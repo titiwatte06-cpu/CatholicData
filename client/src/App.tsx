@@ -16,6 +16,7 @@ import { RegionFilter } from './components/RegionFilter'
 import type { Region } from './data/churches'
 
 const mapCenter: L.LatLngExpression = [13.7563, 100.5018]
+const churchPlaceholderImage = '/church-placeholder.svg'
 
 function useMinuteTick(intervalMs = 30000) {
   const [now, setNow] = useState(() => new Date())
@@ -236,6 +237,15 @@ function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: 
   return (
     <section className="detail">
       <Link className="back-btn" to="/map">{td.back}</Link>
+      <img
+        className="church-detail-image"
+        src={church.imageUrl || churchPlaceholderImage}
+        alt={primaryName}
+        onError={(event) => {
+          event.currentTarget.onerror = null
+          event.currentTarget.src = churchPlaceholderImage
+        }}
+      />
       <h2>{primaryName}</h2>
       {secondaryName && <p className="detail-en">{secondaryName}</p>}
       <span className="district">{getDistrictLabel(church.district, lang)}</span>
@@ -270,6 +280,7 @@ type AddChurchFormState = {
   nameEn: string
   district: string
   address: string
+  imageUrl: string
   lat: string
   lng: string
   priest: string
@@ -277,7 +288,7 @@ type AddChurchFormState = {
   openHours: string
 }
 
-const emptyAddForm: AddChurchFormState = { name: '', nameEn: '', district: '', address: '', lat: '', lng: '', priest: '', mass: '', openHours: '' }
+const emptyAddForm: AddChurchFormState = { name: '', nameEn: '', district: '', address: '', imageUrl: '', lat: '', lng: '', priest: '', mass: '', openHours: '' }
 
 // แปลงข้อความช่อง "ตารางมิสซา" เช่น "จันทร์ - เสาร์: 06:00, 18:00; อาทิตย์: 07:00, 09:00, 18:00"
 // ให้เป็น massSchedule array ตามโครงสร้างที่ backend ต้องการ
@@ -311,6 +322,7 @@ function buildFormFromChurch(church: Church): AddChurchFormState {
     nameEn: church.nameEn,
     district: church.district,
     address: church.address,
+    imageUrl: church.imageUrl ?? '',
     lat: String(church.lat),
     lng: String(church.lng),
     priest: church.priest,
@@ -336,6 +348,7 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
       nameEn: form.nameEn,
       district: form.district,
       address: form.address,
+      imageUrl: form.imageUrl || undefined,
       lat: Number(form.lat),
       lng: Number(form.lng),
       priest: form.priest,
@@ -390,6 +403,9 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
         <label>ที่อยู่
           <input value={form.address} onChange={updateField('address')} required />
         </label>
+        <label>URL รูปภาพวัด
+          <input value={form.imageUrl} onChange={updateField('imageUrl')} type="url" placeholder="https://..." />
+        </label>
         <div className="form-row">
           <label>ละติจูด (lat)
             <input value={form.lat} onChange={updateField('lat')} inputMode="decimal" required />
@@ -443,6 +459,7 @@ function EditChurchModal({ direct, church, onClose, onSuccess }: { direct: boole
       nameEn: form.nameEn,
       district: form.district,
       address: form.address,
+      imageUrl: form.imageUrl || undefined,
       lat: Number(form.lat),
       lng: Number(form.lng),
       priest: form.priest,
@@ -496,6 +513,9 @@ function EditChurchModal({ direct, church, onClose, onSuccess }: { direct: boole
         </label>
         <label>ที่อยู่
           <input value={form.address} onChange={updateField('address')} required />
+        </label>
+        <label>URL รูปภาพวัด
+          <input value={form.imageUrl} onChange={updateField('imageUrl')} type="url" placeholder="https://..." />
         </label>
         <div className="form-row">
           <label>ละติจูด (lat)
@@ -609,6 +629,7 @@ export function MapPage() {
 
   // ⬇️ เพิ่มใหม่: state เก็บภาคที่เลือก (เซ็ตว่าง = แสดงทุกภาค กันหน้าว่างเปล่าตอนเปิดหน้าครั้งแรก)
   const [selectedRegions, setSelectedRegions] = useState<Set<Region>>(new Set())
+  const [showLiveMassOnly, setShowLiveMassOnly] = useState(false)
 
   const toggleRegion = useCallback((region: Region) => {
     setSelectedRegions((prev) => {
@@ -657,8 +678,12 @@ export function MapPage() {
     ? churches
     : churches.filter((church) => selectedRegions.has(church.region))
 
-  const filteredChurches = regionFilteredChurches.filter((church) =>
-    `${church.name} ${church.nameEn} ${church.district}`.toLowerCase().includes(query.toLowerCase())
+  const liveMassFilteredChurches = showLiveMassOnly
+    ? regionFilteredChurches.filter((church) => getMassAlert(church, now).active)
+    : regionFilteredChurches
+
+  const filteredChurches = liveMassFilteredChurches.filter((church) =>
+    `${church.name} ${church.nameEn} ${church.district} ${church.address}`.toLowerCase().includes(query.toLowerCase())
   )
 
   const selectChurch = useCallback((id: string) => navigate(`/map/church/${id}`), [navigate])
@@ -725,6 +750,15 @@ export function MapPage() {
                 placeholder={tm.searchPlaceholder}
                 aria-label={tm.searchPlaceholder}
               />
+              <button
+                type="button"
+                className={`live-mass-filter ${showLiveMassOnly ? 'is-active' : ''}`}
+                onClick={() => setShowLiveMassOnly((current) => !current)}
+                aria-pressed={showLiveMassOnly}
+              >
+                <span className="live-mass-dot" aria-hidden="true" />
+                {lang === 'th' ? 'วัดที่กำลังมีมิสซา' : 'Mass happening now'}
+              </button>
               <div className="sidebar-actions">
                 <button type="button" className="sidebar-action-btn sidebar-action-add" onClick={() => setActiveModal('add')}>
                   {tm.add}
@@ -755,7 +789,7 @@ export function MapPage() {
           )}
         </aside>
         {/* ⬇️ แก้ตรงนี้: ส่ง regionFilteredChurches แทน churches — แผนที่โชว์ตามภาคที่เลือก แต่ไม่ผูกกับ query ค้นหาชื่อ (ตามภาพที่ต้องการ) */}
-        <main className="map-wrap"><MapView onSelect={selectChurch} now={now} churches={regionFilteredChurches} /></main>
+        <main className="map-wrap"><MapView onSelect={selectChurch} now={now} churches={liveMassFilteredChurches} /></main>
       </div>
       {activeModal === 'add' && <AddChurchModal direct={isAuthenticated} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
       {activeModal === 'delete' && <DeleteChurchModal direct={isAuthenticated} churches={churches} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
