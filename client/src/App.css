@@ -318,6 +318,60 @@
   flex: 1;
   min-width: 0;
 }
+
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.locate-button {
+  position: absolute;
+  z-index: 500;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 1px solid #d7dbe3;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1c2b4a;
+  box-shadow: 0 2px 8px #0002;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.locate-button:hover:not(:disabled) {
+  background: #f2f6ff;
+}
+
+.locate-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.locate-button span {
+  color: #2563eb;
+  font-size: 19px;
+  line-height: 1;
+}
+
+.location-error {
+  position: absolute;
+  z-index: 500;
+  top: 58px;
+  right: 16px;
+  max-width: 250px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fff4f1;
+  color: #9c3328;
+  font-size: 12px;
+}
  
 .map {
   width: 100%;

@@ -173,6 +173,9 @@ function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; 
   const mapElement = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markerLayerRef = useRef<L.LayerGroup | null>(null)
+  const locationLayerRef = useRef<L.LayerGroup | null>(null)
+  const [locating, setLocating] = useState(false)
+  const [locationError, setLocationError] = useState(false)
   useEffect(() => {
     if (!mapElement.current) return
     const map = L.map(mapElement.current, { zoomControl: false }).setView(mapCenter, 12)
@@ -180,12 +183,55 @@ function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; 
     L.control.zoom({ position: 'bottomright' }).addTo(map)
     mapRef.current = map
     markerLayerRef.current = L.layerGroup().addTo(map)
+    locationLayerRef.current = L.layerGroup().addTo(map)
     return () => {
       map.remove()
       mapRef.current = null
       markerLayerRef.current = null
+      locationLayerRef.current = null
     }
   }, [])
+
+  const locateUser = () => {
+    if (!navigator.geolocation || !mapRef.current || !locationLayerRef.current) {
+      setLocationError(true)
+      return
+    }
+
+    setLocating(true)
+    setLocationError(false)
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const position: L.LatLngExpression = [coords.latitude, coords.longitude]
+        const map = mapRef.current
+        const locationLayer = locationLayerRef.current
+        if (map && locationLayer) {
+          locationLayer.clearLayers()
+          L.circle(position, {
+            radius: Math.max(coords.accuracy, 30),
+            color: '#2563eb',
+            fillColor: '#60a5fa',
+            fillOpacity: 0.2,
+            weight: 2,
+          }).addTo(locationLayer)
+          L.circleMarker(position, {
+            radius: 8,
+            color: '#ffffff',
+            weight: 3,
+            fillColor: '#2563eb',
+            fillOpacity: 1,
+          }).bindTooltip('ตำแหน่งปัจจุบัน', { direction: 'top' }).addTo(locationLayer)
+          map.setView(position, Math.max(map.getZoom(), 15), { animate: true })
+        }
+        setLocating(false)
+      },
+      () => {
+        setLocating(false)
+        setLocationError(true)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    )
+  }
 
   useEffect(() => {
     const markerLayer = markerLayerRef.current
@@ -205,7 +251,16 @@ function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; 
       marker.on('click', () => onSelect(church.id))
     })
   }, [onSelect, now, churches])
-  return <div ref={mapElement} className="map" aria-label="แผนที่วัดคาทอลิกในกรุงเทพฯ" />
+  return (
+    <div className="map-container">
+      <div ref={mapElement} className="map" aria-label="แผนที่วัดคาทอลิกในกรุงเทพฯ" />
+      <button type="button" className="locate-button" onClick={locateUser} disabled={locating}>
+        <span aria-hidden="true">⌖</span>
+        {locating ? 'กำลังค้นหา...' : 'ตำแหน่งของฉัน'}
+      </button>
+      {locationError && <p className="location-error">ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาต Location ใน browser</p>}
+    </div>
+  )
 }
 
 function ChurchCard({ church, now, lang }: { church: Church; now: Date; lang: 'th' | 'en' }) {
