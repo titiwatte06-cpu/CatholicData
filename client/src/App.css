@@ -201,6 +201,18 @@
   letter-spacing: 0.05em;
 }
 
+.map-header .home-lang-btn {
+  border: 1px solid #e8cd8f;
+  background: #ffffff;
+  color: #16151a;
+}
+
+.map-header .home-lang-btn:hover {
+  background: #e8cd8f;
+  color: #16151a;
+  opacity: 1;
+}
+
 /* --- Responsive --- */
 @media (max-width: 700px) {
   .home-feature-grid {

@@ -6,7 +6,7 @@ import { churchSeedData } from './churches.data.js'
 async function seed() {
   await connectDB()
   await Church.deleteMany({})
-  await Church.insertMany(churchSeedData)
+  await Church.insertMany(churchSeedData.map((church) => ({ ...church, region: church.region || 'bangkok' })))
   console.log(`Seeded ${churchSeedData.length} churches`)
   process.exit(0)
 }

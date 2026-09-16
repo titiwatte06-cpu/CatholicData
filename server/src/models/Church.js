@@ -12,10 +12,18 @@ const churchSchema = new mongoose.Schema({
   nameEn: String,
   district: String,
   address: String,
+  addressEn: String,
+  region: {
+    type: String,
+    enum: ['bangkok', 'north', 'central', 'south'],
+    default: 'bangkok',
+  },
   lat: Number,
   lng: Number,
   openHours: String,
+  openHoursEn: String,
   priest: String,
+  priestEn: String,
   defaultMassDurationMinutes: Number,
   massSchedule: [massScheduleSchema],
 }, { timestamps: true })

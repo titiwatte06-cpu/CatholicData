@@ -7,7 +7,10 @@ const router = express.Router()
 // GET /api/churches — public, รายการวัดทั้งหมด
 router.get('/', async (req, res) => {
   try {
-    const churches = await Church.find().sort({ name: 1 })
+    const churches = (await Church.find().sort({ name: 1 })).map((church) => {
+      const data = church.toObject()
+      return { ...data, region: data.region || 'bangkok' }
+    })
     res.json(churches)
   } catch (err) {
     res.status(500).json({ message: 'โหลดข้อมูลวัดไม่สำเร็จ', error: err.message })
@@ -19,7 +22,8 @@ router.get('/:id', async (req, res) => {
   try {
     const church = await Church.findOne({ id: req.params.id })
     if (!church) return res.status(404).json({ message: 'church not found' })
-    res.json(church)
+    const data = church.toObject()
+    res.json({ ...data, region: data.region || 'bangkok' })
   } catch (err) {
     res.status(500).json({ message: 'โหลดข้อมูลวัดไม่สำเร็จ', error: err.message })
   }

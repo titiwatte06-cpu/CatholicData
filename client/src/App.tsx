@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import './App.css'
 import logo from '../src/assets/logo.svg';
 
-import { type Church } from './data/churches'
+import { getDistrictLabel, getMassDayLabel, getOpenHoursLabel, type Church } from './data/churches'
 import { useAdminAuth } from './admin/AdminAuth.tsx'
 import { getMassAlert } from './utils/massAlert'
 import { API_BASE_URL } from './config'
@@ -171,11 +171,25 @@ export function HomePage() {
 function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; now: Date; churches: Church[] }) {
   const mapElement = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
+  const markerLayerRef = useRef<L.LayerGroup | null>(null)
   useEffect(() => {
     if (!mapElement.current) return
     const map = L.map(mapElement.current, { zoomControl: false }).setView(mapCenter, 12)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map)
     L.control.zoom({ position: 'bottomright' }).addTo(map)
+    mapRef.current = map
+    markerLayerRef.current = L.layerGroup().addTo(map)
+    return () => {
+      map.remove()
+      mapRef.current = null
+      markerLayerRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const markerLayer = markerLayerRef.current
+    if (!markerLayer) return
+    markerLayer.clearLayers()
     churches.forEach((church) => {
       const alert = getMassAlert(church, now)
       const marker = L.marker([church.lat, church.lng], {
@@ -185,12 +199,10 @@ function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; 
           iconSize: [34, 42],
           iconAnchor: [17, 42],
         }),
-      }).addTo(map)
+      }).addTo(markerLayer)
       marker.bindTooltip(church.name, { direction: 'top', offset: [0, -36] })
       marker.on('click', () => onSelect(church.id))
     })
-    mapRef.current = map
-    return () => { map.remove(); mapRef.current = null }
   }, [onSelect, now, churches])
   return <div ref={mapElement} className="map" aria-label="แผนที่วัดคาทอลิกในกรุงเทพฯ" />
 }
@@ -205,7 +217,7 @@ function ChurchCard({ church, now, lang }: { church: Church; now: Date; lang: 't
       <span className="card-body">
         <strong>{primaryName}</strong>
         {secondaryName && <small className="card-name-en">{secondaryName}</small>}
-        <small>{church.district}</small>
+        <small>{getDistrictLabel(church.district, lang)}</small>
       </span>
       {alert.active && <span className="church-open-badge">มิสซา {alert.time} น.</span>}
     </Link>
@@ -226,13 +238,13 @@ function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: 
       <Link className="back-btn" to="/map">{td.back}</Link>
       <h2>{primaryName}</h2>
       {secondaryName && <p className="detail-en">{secondaryName}</p>}
-      <span className="district">{church.district}</span>
-      <InfoBlock label={td.openHours}>{church.openHours}</InfoBlock>
+      <span className="district">{getDistrictLabel(church.district, lang)}</span>
+      <InfoBlock label={td.openHours}>{lang === 'en' ? church.openHoursEn ?? getOpenHoursLabel(church.openHours, lang) : church.openHours}</InfoBlock>
       <InfoBlock label={td.massSchedule}>
-        <table><tbody>{church.massSchedule.map((row) => <tr key={row.day}><th>{row.day}</th><td>{row.times.join(' · ')}{td.timeUnit}</td></tr>)}</tbody></table>
+        <table><tbody>{church.massSchedule.map((row) => <tr key={row.day}><th>{getMassDayLabel(row.day, lang)}</th><td>{row.times.join(' · ')}{td.timeUnit}</td></tr>)}</tbody></table>
       </InfoBlock>
-      <InfoBlock label={td.priest}>{church.priest}</InfoBlock>
-      <InfoBlock label={td.address}>{church.address}</InfoBlock>
+      <InfoBlock label={td.priest}>{lang === 'en' ? church.priestEn ?? 'English information unavailable' : church.priest}</InfoBlock>
+      <InfoBlock label={td.address}>{lang === 'en' ? church.addressEn ?? 'English information unavailable' : church.address}</InfoBlock>
       <button type="button" className="edit-detail-btn" onClick={onEditClick}>✎ {canEditDirectly ? td.editDirect : td.editRequest}</button>
       <a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer">{td.directions}</a>
     </section>
