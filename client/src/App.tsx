@@ -738,7 +738,7 @@ export function MapPage() {
     : regionFilteredChurches
 
   const filteredChurches = liveMassFilteredChurches.filter((church) =>
-    `${church.name} ${church.nameEn} ${church.district} ${church.address}`.toLowerCase().includes(query.toLowerCase())
+    `${church.name} ${church.nameEn} ${church.district} ${church.province ?? ''} ${church.address}`.toLowerCase().includes(query.toLowerCase())
   )
 
   const selectChurch = useCallback((id: string) => navigate(`/map/church/${id}`), [navigate])

@@ -12,6 +12,7 @@ const churchSchema = new mongoose.Schema({
   nameEn: String,
   imageUrl: String,
   district: String,
+  province: String,
   address: String,
   addressEn: String,
   region: {

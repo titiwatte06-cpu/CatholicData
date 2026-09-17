@@ -72,6 +72,7 @@ export type Church = {
   nameEn: string
   imageUrl?: string
   district: string
+  province?: string
   address: string
   addressEn?: string
   region: Region
