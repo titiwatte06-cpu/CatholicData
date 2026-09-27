@@ -11,14 +11,24 @@ const regionLabels: Record<Region, { th: string; en: string }> = {
 export function RegionFilter({
   selected,
   onToggle,
+  onReset,
   lang,
 }: {
   selected: Set<Region>
   onToggle: (region: Region) => void
+  onReset: () => void
   lang: 'th' | 'en'
 }) {
   return (
     <div className="region-filter">
+      <button
+        type="button"
+        className={`region-chip region-chip-all ${selected.size === 0 ? 'is-active' : ''}`}
+        onClick={onReset}
+        aria-pressed={selected.size === 0}
+      >
+        {lang === 'th' ? 'ทุกภาค' : 'All regions'}
+      </button>
       {(Object.keys(regionLabels) as Region[]).map((region) => (
         <button
           key={region}

@@ -774,17 +774,49 @@ export function MapPage() {
       </header>
       <div className="map-layout">
         <aside className="map-sidebar">
-          <h1>{tm.heading}</h1>
+          <header className="map-sidebar-heading">
+            <p className="map-sidebar-eyebrow">{lang === 'th' ? 'สำรวจแผนที่' : 'EXPLORE THE MAP'}</p>
+            <h1>{tm.heading}</h1>
+          </header>
           {!selectedChurch && (
             <>
-              {/* ⬇️ เพิ่มใหม่: แถบปุ่ม toggle เลือกภาค วางไว้เหนือช่องค้นหา */}
-              <RegionFilter selected={selectedRegions} onToggle={toggleRegion} lang={lang} />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={tm.searchPlaceholder}
-                aria-label={tm.searchPlaceholder}
-              />
+              <section className="map-control-section" aria-labelledby="region-filter-heading">
+                <div className="map-control-heading">
+                  <span className="map-control-index">01</span>
+                  <h2 id="region-filter-heading">{lang === 'th' ? 'เลือกภาค' : 'Regions'}</h2>
+                </div>
+                <RegionFilter
+                  selected={selectedRegions}
+                  onToggle={toggleRegion}
+                  onReset={() => setSelectedRegions(new Set())}
+                  lang={lang}
+                />
+              </section>
+              <section className="map-control-section map-search-section" aria-labelledby="church-search-heading">
+                <div className="map-control-heading">
+                  <span className="map-control-index">02</span>
+                  <h2 id="church-search-heading">{lang === 'th' ? 'ค้นหาวัด' : 'Find a church'}</h2>
+                </div>
+                <div className="map-search-wrap">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="10.8" cy="10.8" r="6.3" />
+                    <path d="m15.4 15.4 4.1 4.1" />
+                  </svg>
+                  <input
+                    id="map-church-search"
+                    className="map-search-input"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder={tm.searchPlaceholder}
+                    aria-label={tm.searchPlaceholder}
+                  />
+                  {query && (
+                    <button type="button" className="map-search-clear" onClick={() => setQuery('')} aria-label={lang === 'th' ? 'ล้างคำค้นหา' : 'Clear search'}>
+                      ×
+                    </button>
+                  )}
+                </div>
+              </section>
               <button
                 type="button"
                 className={`live-mass-filter ${showLiveMassOnly ? 'is-active' : ''}`}
@@ -794,13 +826,23 @@ export function MapPage() {
                 <span className="live-mass-dot" aria-hidden="true" />
                 {lang === 'th' ? 'วัดที่กำลังมีมิสซา' : 'Mass happening now'}
               </button>
-              <div className="sidebar-actions">
+              <section className="map-control-section map-manage-section" aria-labelledby="map-manage-heading">
+                <div className="map-control-heading">
+                  <span className="map-control-index">03</span>
+                  <h2 id="map-manage-heading">{lang === 'th' ? 'จัดการข้อมูล' : 'Church data'}</h2>
+                </div>
+                <div className="sidebar-actions">
                 <button type="button" className="sidebar-action-btn sidebar-action-add" onClick={() => setActiveModal('add')}>
                   {tm.add}
                 </button>
                 <button type="button" className="sidebar-action-btn sidebar-action-remove" onClick={() => setActiveModal('delete')}>
                   {tm.remove}
                 </button>
+                </div>
+              </section>
+              <div className="map-sidebar-results" aria-live="polite">
+                <span className="map-sidebar-results-dot" aria-hidden="true" />
+                {lang === 'th' ? `แสดง ${visibleChurches.length} วัดบนแผนที่` : `Showing ${visibleChurches.length} churches on map`}
               </div>
               {!isAuthenticated && (
                 <p className="sidebar-hint">{tm.hint}</p>
