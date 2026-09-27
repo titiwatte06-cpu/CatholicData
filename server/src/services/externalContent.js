@@ -5,6 +5,8 @@ import CatholicNews from '../models/CatholicNews.js'
 
 const DAILY_READING_ARCHIVE_URL = 'https://kamsonbkk.com/dailyreading/2012-03-09-06-41-09'
 const CATHOLIC_NEWS_URL = 'https://www.catholic.or.th/main/index.php?option=com_content&view=category&id=72&Itemid=369'
+const NEWS_PAGE_SIZE = 5
+const NEWS_PAGE_COUNT = 3
 const USER_AGENT = 'Mozilla/5.0 (compatible; CatholicDataApp/1.0)'
 const MAX_EXCERPT_LENGTH = 280
 const thaiMonths = {
@@ -67,18 +69,28 @@ export async function scrapeDailyReading() {
 }
 
 export async function scrapeCatholicNews() {
-  const categoryHtml = await fetchHtml(CATHOLIC_NEWS_URL)
-  const $ = cheerio.load(categoryHtml)
-  const articleLinks = $('td.list-title a[href*="option=com_content"][href*="view=article"]').toArray()
+  const categoryPages = await Promise.all(Array.from({ length: NEWS_PAGE_COUNT }, async (_, pageIndex) => {
+    const pageUrl = new URL(CATHOLIC_NEWS_URL)
+    pageUrl.searchParams.set('limitstart', String(pageIndex * NEWS_PAGE_SIZE))
+    const categoryHtml = await fetchHtml(pageUrl.href)
+    return { html: categoryHtml, url: pageUrl.href }
+  }))
+  const articleLinksByUrl = new Map()
+  for (const page of categoryPages) {
+    const $ = cheerio.load(page.html)
+    $('td.list-title a[href*="option=com_content"][href*="view=article"]').each((_, element) => {
+      const url = new URL($(element).attr('href'), page.url).href
+      articleLinksByUrl.set(url, { title: $(element).text().replace(/\s+/g, ' ').trim(), url })
+    })
+  }
+  const articleLinks = [...articleLinksByUrl.values()]
   if (!articleLinks.length) throw new Error('Catholic news category contains no article links')
 
-  const news = await Promise.all(articleLinks.slice(0, 10).map(async (element) => {
-    const link = $(element)
-    const url = new URL(link.attr('href'), CATHOLIC_NEWS_URL).href
+  const news = await Promise.all(articleLinks.map(async ({ title: linkedTitle, url }) => {
     const articleHtml = await fetchHtml(url)
     const article = cheerio.load(articleHtml)
     const articleContent = article('.articleContent').first()
-    const title = article('#component h2').first().text().replace(/\s+/g, ' ').trim() || link.text().replace(/\s+/g, ' ').trim()
+    const title = article('#component h2').first().text().replace(/\s+/g, ' ').trim() || linkedTitle
     const metadata = article('dl.article-info').text().replace(/\s+/g, ' ').trim()
     const publishedDate = parseThaiDate(metadata)
     const paragraphs = articleContent.find('p').toArray()

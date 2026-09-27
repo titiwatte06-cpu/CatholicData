@@ -32,20 +32,28 @@ function removeLeadingEventDate(text) {
 }
 
 async function testCatholicNewsFetch() {
-  const categoryResponse = await axios.get(sourceUrl, requestConfig)
-  const $ = cheerio.load(categoryResponse.data)
-  const newsLinks = $('td.list-title a[href*="option=com_content"][href*="view=article"]').toArray()
+  const categoryPages = await Promise.all([0, 5, 10].map(async (limitstart) => {
+    const pageUrl = new URL(sourceUrl)
+    pageUrl.searchParams.set('limitstart', String(limitstart))
+    const response = await axios.get(pageUrl.href, requestConfig)
+    const page = cheerio.load(response.data)
+    const links = page('td.list-title a[href*="option=com_content"][href*="view=article"]').toArray().map((element) => ({
+      title: page(element).text().replace(/\s+/g, ' ').trim(),
+      url: new URL(page(element).attr('href'), pageUrl.href).href,
+    }))
+    return { response, links }
+  }))
+  const categoryResponse = categoryPages[0].response
+  const newsLinks = [...new Map(categoryPages.flatMap((page) => page.links).map((link) => [link.url, link])).values()]
   if (!newsLinks.length) throw new Error('No news links found in td.list-title')
 
   console.log(`Category HTTP: ${categoryResponse.status}`)
-  console.log(`News links found with td.list-title a[href*="view=article"]: ${newsLinks.length}`)
+  console.log(`Category pages fetched: ${categoryPages.length}`)
+  console.log(`Unique news links across pagination: ${newsLinks.length}`)
   console.log(`Date conversion example 26-09-2569 -> ${parseThaiPublishedDate('26-09-2569')}`)
 
   const results = []
-  for (const element of newsLinks.slice(0, 5)) {
-    const link = $(element)
-    const title = link.text().replace(/\s+/g, ' ').trim()
-    const url = new URL(link.attr('href'), sourceUrl).href
+  for (const { title: linkedTitle, url } of newsLinks.slice(0, 10)) {
     const response = await axios.get(url, requestConfig)
     const article = cheerio.load(response.data)
     const articleContent = article('.articleContent').first()
@@ -55,13 +63,13 @@ async function testCatholicNewsFetch() {
       .map((paragraph) => article(paragraph).text().replace(/\s+/g, ' ').trim())
       .filter(Boolean)
     const firstParagraph = paragraphs.find((paragraph) => paragraph.length > 30) ?? articleContent.text().replace(/\s+/g, ' ').trim()
-    const excerpt = removeLeadingEventDate(firstParagraph.replace(title, '').trim()).slice(0, 320)
+    const excerpt = removeLeadingEventDate(firstParagraph.replace(linkedTitle, '').trim()).slice(0, 320)
     const imageUrl = articleContent.find('img[src]').toArray()
       .map((image) => new URL(article(image).attr('src'), url).href)
       .find((image) => !/printButton|emailButton/.test(image)) ?? null
 
     results.push({
-      title: article('#component h2').first().text().replace(/\s+/g, ' ').trim() || title,
+      title: article('#component h2').first().text().replace(/\s+/g, ' ').trim() || linkedTitle,
       url,
       publishedDate,
       publishedDateSourceText: metadata,
@@ -76,7 +84,7 @@ async function testCatholicNewsFetch() {
     })
   }
 
-  console.log('\nExtracted news preview (first 5):')
+  console.log('\nExtracted news preview (first 10):')
   console.log(JSON.stringify(results, null, 2))
 }
 
