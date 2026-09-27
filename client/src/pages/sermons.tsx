@@ -1,7 +1,15 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLanguage } from '../LanguageContext'
+import { API_BASE_URL } from '../config'
 import logo from '../assets/logo.svg'
+
+type DailyReading = {
+  date: string
+  title: string
+  content: string
+  sourceUrl: string
+}
 
 export type Sermon = {
   id: string
@@ -76,6 +84,12 @@ const sermonText = {
   th: {
     eyebrow: 'บทเทศน์',
     heading: 'บทเทศน์',
+    dailyReading: 'พระวาจาประจำวัน',
+    source: 'อ่านต่อที่เว็บไซต์ต้นทาง',
+    loadingDaily: 'กำลังโหลดพระวาจาประจำวัน...',
+    dailyError: 'ยังโหลดพระวาจาประจำวันไม่ได้',
+    retry: 'ลองอีกครั้ง',
+    samples: 'บทเทศน์ตัวอย่าง',
     back: '← กลับหน้าแรก',
     detailBack: '← กลับรายการบทเทศน์',
     preacher: 'ผู้เทศน์',
@@ -88,6 +102,12 @@ const sermonText = {
   en: {
     eyebrow: 'Sermons',
     heading: 'Sermons',
+    dailyReading: 'Daily Reading',
+    source: 'Read at the original source',
+    loadingDaily: 'Loading today’s reading...',
+    dailyError: 'Today’s reading could not be loaded',
+    retry: 'Try again',
+    samples: 'Sample sermons',
     back: '← Back to home',
     detailBack: '← Back to sermons',
     preacher: 'Preacher',
@@ -129,6 +149,30 @@ function SermonLayout({ children }: { children: ReactNode }) {
 export function SermonsPage() {
   const { lang } = useLanguage()
   const t = sermonText[lang]
+  const [dailyReading, setDailyReading] = useState<DailyReading | null>(null)
+  const [dailyLoading, setDailyLoading] = useState(true)
+  const [dailyError, setDailyError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setDailyLoading(true)
+    setDailyError(false)
+    fetch(`${API_BASE_URL}/api/daily-reading/today`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Daily reading request failed')
+        return response.json() as Promise<DailyReading>
+      })
+      .then((reading) => setDailyReading(reading))
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setDailyError(true)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setDailyLoading(false)
+      })
+    return () => controller.abort()
+  }, [retryKey])
 
   return (
     <SermonLayout>
@@ -136,6 +180,28 @@ export function SermonsPage() {
       
       <h1>{t.heading}</h1>
 
+      <section className="daily-reading-panel" aria-labelledby="daily-reading-heading">
+        <p className="eyebrow">{t.dailyReading}</p>
+        {dailyLoading ? (
+          <p role="status">{t.loadingDaily}</p>
+        ) : dailyError ? (
+          <div className="content-empty">
+            <p>{t.dailyError}</p>
+            <button type="button" className="content-retry" onClick={() => setRetryKey((value) => value + 1)}>{t.retry}</button>
+          </div>
+        ) : dailyReading ? (
+          <>
+            <h2 id="daily-reading-heading">{dailyReading.title}</h2>
+            <p className="daily-reading-date">{dailyReading.date}</p>
+            <p className="daily-reading-excerpt">{dailyReading.content}</p>
+            <a href={dailyReading.sourceUrl} target="_blank" rel="noreferrer" className="content-source-link">
+              {t.source} ↗
+            </a>
+          </>
+        ) : null}
+      </section>
+
+      <h2 className="sermon-samples-heading">{t.samples}</h2>
       <div className="sermon-list">
         {sermons.map((sermon) => {
           const title = lang === 'en' ? sermon.titleEn ?? sermon.title : sermon.title

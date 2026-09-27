@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import churchesRouter from './routes/churches.js'
 import authRouter from './routes/auth.js'
 import churchRequestsRouter from './routes/churchRequests.js'
+import externalContentRouter from './routes/externalContent.js'
 
 const app = express()
 
@@ -18,5 +19,6 @@ app.use(cookieParser())
 app.use('/api/churches', churchesRouter)
 app.use('/api/church-requests', churchRequestsRouter)
 app.use('/api/auth', authRouter)
+app.use('/api', externalContentRouter)
 
 export default app

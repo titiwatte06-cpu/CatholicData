@@ -4,6 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import './index.css'
 import { ContentPage, HomePage, MapPage } from './App.tsx'
 import { SermonsPage, SermonDetailPage } from './pages/sermons'
+import { NewsPage } from './pages/news'
 import { AdminAuthProvider } from './admin/AdminAuth.tsx'
 import { AdminLogin } from './admin/AdminLogin.tsx'
 import AdminLayout from './admin/AdminLayout'
@@ -27,7 +28,7 @@ createRoot(document.getElementById('root')!).render(
 
             {/* หน้าอื่นยังใช้ ContentPage เดิม */}
             <Route path="/about" element={<ContentPage title="เกี่ยวกับเรา" english="About Us" />} />
-            <Route path="/news" element={<ContentPage title="ข่าว & กิจกรรม" english="News & Events" />} />
+            <Route path="/news" element={<NewsPage />} />
             <Route path="/contact" element={<ContentPage title="ติดต่อเรา" english="Contact" />} />
 
             <Route path="/admin/login" element={<AdminLogin />} />
