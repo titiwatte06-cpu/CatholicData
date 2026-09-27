@@ -8,6 +8,7 @@ import { AdminAuthProvider } from './admin/AdminAuth.tsx'
 import { AdminLogin } from './admin/AdminLogin.tsx'
 import AdminLayout from './admin/AdminLayout'
 import AdminDashboard from './admin/AdminDashboard'
+import { RequireAdminAuth } from './admin/RequireAdminAuth'
 import { LanguageProvider } from './LanguageContext'
 
 createRoot(document.getElementById('root')!).render(
@@ -30,7 +31,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/contact" element={<ContentPage title="ติดต่อเรา" english="Contact" />} />
 
             <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<AdminLayout />}>
+            <Route path="/admin" element={<RequireAdminAuth><AdminLayout /></RequireAdminAuth>}>
               <Route index element={<AdminDashboard />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
