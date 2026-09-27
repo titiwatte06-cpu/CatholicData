@@ -6,6 +6,8 @@ import { ContentPage, HomePage, MapPage } from './App.tsx'
 import { SermonsPage, SermonDetailPage } from './pages/sermons'
 import { AdminAuthProvider } from './admin/AdminAuth.tsx'
 import { AdminLogin } from './admin/AdminLogin.tsx'
+import AdminLayout from './admin/AdminLayout'
+import AdminDashboard from './admin/AdminDashboard'
 import { LanguageProvider } from './LanguageContext'
 
 createRoot(document.getElementById('root')!).render(
@@ -28,6 +30,9 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/contact" element={<ContentPage title="ติดต่อเรา" english="Contact" />} />
 
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AdminAuthProvider>

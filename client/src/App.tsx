@@ -263,23 +263,6 @@ function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; 
   )
 }
 
-function ChurchCard({ church, now, lang }: { church: Church; now: Date; lang: 'th' | 'en' }) {
-  const alert = getMassAlert(church, now)
-  const primaryName = lang === 'th' ? church.name : church.nameEn
-  const secondaryName = null   // ⬅️ แก้ตรงนี้ — เดิมเป็น `lang === 'th' ? church.nameEn : null` ตอนนี้ null เสมอ ไม่โชว์ชื่อคู่ภาษาเลย
-  return (
-    <Link className="church-card" to={`/map/church/${church.id}`}>
-      <span className="card-pin">+</span>
-      <span className="card-body">
-        <strong>{primaryName}</strong>
-        {secondaryName && <small className="card-name-en">{secondaryName}</small>}
-        <small>{getDistrictLabel(church.district, lang)}</small>
-      </span>
-      {alert.active && <span className="church-open-badge">มิสซา {alert.time} น.</span>}
-    </Link>
-  )
-}
-
 function InfoBlock({ label, children }: { label: string; children: ReactNode }) {
   return <div className="detail-block"><div className="detail-label">{label}</div><div className="detail-value">{children}</div></div>
 }
@@ -679,8 +662,6 @@ export function MapPage() {
   const now = useMinuteTick()
 
   const [churches, setChurches] = useState<Church[]>([])
-  const [loadingChurches, setLoadingChurches] = useState(true)
-  const [fetchError, setFetchError] = useState(false)
 
   // ⬇️ เพิ่มใหม่: state เก็บภาคที่เลือก (เซ็ตว่าง = แสดงทุกภาค กันหน้าว่างเปล่าตอนเปิดหน้าครั้งแรก)
   const [selectedRegions, setSelectedRegions] = useState<Set<Region>>(new Set())
@@ -700,11 +681,8 @@ export function MapPage() {
       if (!res.ok) throw new Error('failed to fetch churches')
       const data: Church[] = await res.json()
       setChurches(data)
-      setFetchError(false)
     } catch {
-      setFetchError(true)
-    } finally {
-      setLoadingChurches(false)
+      setChurches([])
     }
   }, [])
 
@@ -737,8 +715,10 @@ export function MapPage() {
     ? regionFilteredChurches.filter((church) => getMassAlert(church, now).active)
     : regionFilteredChurches
 
-  const filteredChurches = liveMassFilteredChurches.filter((church) =>
-    `${church.name} ${church.nameEn} ${church.district} ${church.province ?? ''} ${church.address}`.toLowerCase().includes(query.toLowerCase())
+  const visibleChurches = liveMassFilteredChurches.filter((church) =>
+    `${church.name} ${church.nameEn} ${church.district} ${church.province ?? ''} ${church.address}`
+      .toLowerCase()
+      .includes(query.toLowerCase())
   )
 
   const selectChurch = useCallback((id: string) => navigate(`/map/church/${id}`), [navigate])
@@ -829,22 +809,9 @@ export function MapPage() {
           )}
           {selectedChurch ? (
             <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAuthenticated} lang={lang} />
-          ) : (
-            <div className="church-list">
-              {loadingChurches ? (
-                <p className="no-results">{tm.loading}</p>
-              ) : fetchError ? (
-                <p className="no-results">{tm.loadError}</p>
-              ) : filteredChurches.length ? (
-                filteredChurches.map((church) => <ChurchCard key={church.id} church={church} now={now} lang={lang} />)
-              ) : (
-                <p className="no-results">{tm.noResults}</p>
-              )}
-            </div>
-          )}
+          ) : null}
         </aside>
-        {/* ⬇️ แก้ตรงนี้: ส่ง regionFilteredChurches แทน churches — แผนที่โชว์ตามภาคที่เลือก แต่ไม่ผูกกับ query ค้นหาชื่อ (ตามภาพที่ต้องการ) */}
-        <main className="map-wrap"><MapView onSelect={selectChurch} now={now} churches={liveMassFilteredChurches} /></main>
+        <main className="map-wrap"><MapView onSelect={selectChurch} now={now} churches={visibleChurches} /></main>
       </div>
       {activeModal === 'add' && <AddChurchModal direct={isAuthenticated} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
       {activeModal === 'delete' && <DeleteChurchModal direct={isAuthenticated} churches={churches} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
