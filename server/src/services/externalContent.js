@@ -6,13 +6,24 @@ import CatholicNews from '../models/CatholicNews.js'
 const DAILY_READING_ARCHIVE_URL = 'https://kamsonbkk.com/dailyreading/2012-03-09-06-41-09'
 const CATHOLIC_NEWS_URL = 'https://www.catholic.or.th/main/index.php?option=com_content&view=category&id=72&Itemid=369'
 const NEWS_PAGE_SIZE = 5
-const NEWS_PAGE_COUNT = 3
+const NEWS_TARGET_COUNT = 50
+const NEWS_PAGE_COUNT = Math.ceil(NEWS_TARGET_COUNT / NEWS_PAGE_SIZE)
+const NEWS_ARTICLE_CONCURRENCY = 5
 const USER_AGENT = 'Mozilla/5.0 (compatible; CatholicDataApp/1.0)'
 const MAX_EXCERPT_LENGTH = 280
 const thaiMonths = {
   'มกราคม': 1, 'กุมภาพันธ์': 2, 'มีนาคม': 3, 'เมษายน': 4,
   'พฤษภาคม': 5, 'มิถุนายน': 6, 'กรกฎาคม': 7, 'สิงหาคม': 8,
   'กันยายน': 9, 'ตุลาคม': 10, 'พฤศจิกายน': 11, 'ธันวาคม': 12,
+}
+const thaiWeekdays = {
+  'อาทิตย์': 0,
+  'จันทร์': 1,
+  'อังคาร': 2,
+  'พุธ': 3,
+  'พฤหัสบดี': 4,
+  'ศุกร์': 5,
+  'เสาร์': 6,
 }
 
 async function fetchHtml(url) {
@@ -36,12 +47,47 @@ function parseThaiDate(text) {
   return `${year}-${String(thaiMonths[namedDate[2]]).padStart(2, '0')}-${String(Number(namedDate[1])).padStart(2, '0')}`
 }
 
+export function getReadingDate(title, publishedDate) {
+  const weekdayName = title.match(/จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์/)?.[0]
+  const targetWeekday = thaiWeekdays[weekdayName]
+  if (targetWeekday === undefined) return null
+
+  const [year, month, day] = publishedDate.split('-').map(Number)
+  const publishedTimestamp = Date.UTC(year, month - 1, day)
+  const publishedWeekday = new Date(publishedTimestamp).getUTCDay()
+  const dayOffset = (targetWeekday - publishedWeekday + 7) % 7
+  const readingTimestamp = publishedTimestamp + dayOffset * 24 * 60 * 60 * 1000
+  const readingDate = new Date(readingTimestamp)
+  const readingYear = readingDate.getUTCFullYear()
+  const readingMonth = String(readingDate.getUTCMonth() + 1).padStart(2, '0')
+  const readingDay = String(readingDate.getUTCDate()).padStart(2, '0')
+  return `${readingYear}-${readingMonth}-${readingDay}`
+}
+
 function toExcerpt(text) {
   return text.replace(/\s+/g, ' ').trim().slice(0, MAX_EXCERPT_LENGTH)
 }
 
 function removeLeadingEventDate(text) {
   return text.replace(/^(?:วัน)?(?:จันทร์|อังคาร|พุธ|พฤหัสบดี|ศุกร์|เสาร์|อาทิตย์)(?:ที่)?\s+\d{1,2}\s+[ก-๙]+\s+(?:(?:ค\.ศ\.)\s*)?\d{4}(?:\s*\/\s*\d{4})?\s*/, '').trim()
+}
+
+export async function scrapeDailyReadingArticle(sourceUrl) {
+  const articleHtml = await fetchHtml(sourceUrl)
+  const $ = cheerio.load(articleHtml)
+  const articleContainer = $('.item-page').first()
+  const title = $('#component h2').first().text().replace(/\s+/g, ' ').trim()
+  const articleText = articleContainer.text().replace(/\s+/g, ' ').trim()
+  const publishedDateText = articleText.match(/เผยแพร่เมื่อ:\s*(.+?)\s+สร้างเมื่อ:/)?.[1] ?? ''
+  const publishedDate = parseThaiDate(publishedDateText)
+  const readingDate = publishedDate && getReadingDate(title, publishedDate)
+  const contentParagraphs = articleContainer.find('p').toArray()
+    .map((paragraph) => $(paragraph).text().replace(/\s+/g, ' ').trim())
+    .filter((paragraph) => paragraph && paragraph !== title && !/^เผยแพร่เมื่อ:|^สร้างเมื่อ:|^เขียนโดย/.test(paragraph))
+  const content = contentParagraphs.join('\n\n')
+
+  if (!title || !publishedDate || !readingDate || !content) throw new Error('Daily reading page did not contain the expected title, dates, and content')
+  return { publishedDate, readingDate, title, content, sourceUrl }
 }
 
 export async function scrapeDailyReading() {
@@ -51,42 +97,26 @@ export async function scrapeDailyReading() {
   if (!firstLink.length) throw new Error('Daily reading archive contains no reading links')
 
   const sourceUrl = new URL(firstLink.attr('href'), DAILY_READING_ARCHIVE_URL).href
-  const articleHtml = await fetchHtml(sourceUrl)
-  const $ = cheerio.load(articleHtml)
-  const articleContainer = $('.item-page').first()
-  const title = $('#component h2').first().text().replace(/\s+/g, ' ').trim()
-  const articleText = articleContainer.text().replace(/\s+/g, ' ').trim()
-  const publishedDateText = articleText.match(/เผยแพร่เมื่อ:\s*(.+?)\s+สร้างเมื่อ:/)?.[1] ?? ''
-  const date = parseThaiDate(publishedDateText)
-  const contentText = articleContainer.find('p').toArray()
-    .map((paragraph) => $(paragraph).text().replace(/\s+/g, ' ').trim())
-    .filter((paragraph) => paragraph && paragraph !== title && !/^เผยแพร่เมื่อ:|^สร้างเมื่อ:|^เขียนโดย/.test(paragraph))
-    .join(' ')
-  const content = toExcerpt(contentText)
-
-  if (!title || !date || !content) throw new Error('Daily reading page did not contain the expected title, date, and content')
-  return { date, title, content, sourceUrl }
+  return scrapeDailyReadingArticle(sourceUrl)
 }
 
 export async function scrapeCatholicNews() {
-  const categoryPages = await Promise.all(Array.from({ length: NEWS_PAGE_COUNT }, async (_, pageIndex) => {
+  const articleLinksByUrl = new Map()
+  for (let pageIndex = 0; pageIndex < NEWS_PAGE_COUNT; pageIndex += 1) {
     const pageUrl = new URL(CATHOLIC_NEWS_URL)
     pageUrl.searchParams.set('limitstart', String(pageIndex * NEWS_PAGE_SIZE))
     const categoryHtml = await fetchHtml(pageUrl.href)
-    return { html: categoryHtml, url: pageUrl.href }
-  }))
-  const articleLinksByUrl = new Map()
-  for (const page of categoryPages) {
-    const $ = cheerio.load(page.html)
+    const $ = cheerio.load(categoryHtml)
     $('td.list-title a[href*="option=com_content"][href*="view=article"]').each((_, element) => {
-      const url = new URL($(element).attr('href'), page.url).href
+      const url = new URL($(element).attr('href'), pageUrl.href).href
       articleLinksByUrl.set(url, { title: $(element).text().replace(/\s+/g, ' ').trim(), url })
     })
+    if (articleLinksByUrl.size >= NEWS_TARGET_COUNT) break
   }
-  const articleLinks = [...articleLinksByUrl.values()]
+  const articleLinks = [...articleLinksByUrl.values()].slice(0, NEWS_TARGET_COUNT)
   if (!articleLinks.length) throw new Error('Catholic news category contains no article links')
 
-  const news = await Promise.all(articleLinks.map(async ({ title: linkedTitle, url }) => {
+  const scrapeArticle = async ({ title: linkedTitle, url }) => {
     const articleHtml = await fetchHtml(url)
     const article = cheerio.load(articleHtml)
     const articleContent = article('.articleContent').first()
@@ -104,7 +134,13 @@ export async function scrapeCatholicNews() {
 
     if (!title || !publishedDate) throw new Error(`News article is missing title or publication date: ${url}`)
     return { title, url, publishedDate, excerpt, imageUrl }
-  }))
+  }
+
+  const news = []
+  for (let offset = 0; offset < articleLinks.length; offset += NEWS_ARTICLE_CONCURRENCY) {
+    const batch = articleLinks.slice(offset, offset + NEWS_ARTICLE_CONCURRENCY)
+    news.push(...await Promise.all(batch.map(scrapeArticle)))
+  }
 
   return news
 }
@@ -112,7 +148,7 @@ export async function scrapeCatholicNews() {
 export async function refreshDailyReading() {
   const reading = await scrapeDailyReading()
   return DailyReading.findOneAndUpdate(
-    { date: reading.date },
+    { readingDate: reading.readingDate },
     { $set: reading },
     { returnDocument: 'after', upsert: true, runValidators: true, setDefaultsOnInsert: true },
   )
@@ -128,6 +164,16 @@ export async function refreshCatholicNews() {
     },
   }))
   await CatholicNews.bulkWrite(operations, { ordered: false })
+
+  const olderNews = await CatholicNews.find()
+    .sort({ publishedDate: -1, createdAt: -1 })
+    .skip(NEWS_TARGET_COUNT)
+    .select('_id')
+    .lean()
+  if (olderNews.length) {
+    await CatholicNews.deleteMany({ _id: { $in: olderNews.map((item) => item._id) } })
+  }
+
   return { count: news.length }
 }
 

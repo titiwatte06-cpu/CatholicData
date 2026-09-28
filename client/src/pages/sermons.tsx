@@ -5,7 +5,8 @@ import { API_BASE_URL } from '../config'
 import logo from '../assets/logo.svg'
 
 type DailyReading = {
-  date: string
+  readingDate: string
+  publishedDate: string
   title: string
   content: string
   sourceUrl: string
@@ -192,7 +193,7 @@ export function SermonsPage() {
         ) : dailyReading ? (
           <>
             <h2 id="daily-reading-heading">{dailyReading.title}</h2>
-            <p className="daily-reading-date">{dailyReading.date}</p>
+            <p className="daily-reading-date">{dailyReading.readingDate}</p>
             <p className="daily-reading-excerpt">{dailyReading.content}</p>
             <a href={dailyReading.sourceUrl} target="_blank" rel="noreferrer" className="content-source-link">
               {t.source} ↗

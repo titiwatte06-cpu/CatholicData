@@ -13,6 +13,14 @@ type CatholicNews = {
   imageUrl: string
 }
 
+type NewsPageResponse = {
+  items: CatholicNews[]
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
 const newsText = {
   th: {
     title: 'ข่าว & กิจกรรม',
@@ -23,6 +31,9 @@ const newsText = {
     empty: 'ยังไม่มีข่าวในระบบ',
     source: 'อ่านข่าวต้นฉบับ',
     sourceLabel: 'แหล่งข่าว: สื่อมวลชนคาทอลิกประเทศไทย',
+    previous: 'ก่อนหน้า',
+    next: 'ถัดไป',
+    page: 'หน้า',
   },
   en: {
     title: 'News & Events',
@@ -33,6 +44,9 @@ const newsText = {
     empty: 'No news is available yet',
     source: 'Read original article',
     sourceLabel: 'Source: Catholic Media Thailand',
+    previous: 'Previous',
+    next: 'Next',
+    page: 'Page',
   },
 }
 
@@ -49,17 +63,23 @@ export function NewsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [retryKey, setRetryKey] = useState(0)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const pageSize = 10
 
   useEffect(() => {
     const controller = new AbortController()
     setLoading(true)
     setError(false)
-    fetch(`${API_BASE_URL}/api/news`, { signal: controller.signal })
+    fetch(`${API_BASE_URL}/api/news?page=${page}&limit=${pageSize}`, { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error('Catholic news request failed')
-        return response.json() as Promise<CatholicNews[]>
+        return response.json() as Promise<NewsPageResponse>
       })
-      .then((items) => setNews(items))
+      .then((result) => {
+        setNews(result.items)
+        setTotalPages(result.totalPages)
+      })
       .catch((requestError: unknown) => {
         if (requestError instanceof DOMException && requestError.name === 'AbortError') return
         setError(true)
@@ -68,7 +88,7 @@ export function NewsPage() {
         if (!controller.signal.aborted) setLoading(false)
       })
     return () => controller.abort()
-  }, [retryKey])
+  }, [page, pageSize, retryKey])
 
   return (
     <main className="content-page">
@@ -118,6 +138,17 @@ export function NewsPage() {
               </article>
             ))}
           </div>
+        )}
+        {!loading && !error && news.length > 0 && (
+          <nav className="news-pagination" aria-label={lang === 'th' ? 'แบ่งหน้าข่าว' : 'News pagination'}>
+            <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page <= 1}>
+              {text.previous}
+            </button>
+            <span>{text.page} {page} / {totalPages}</span>
+            <button type="button" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page >= totalPages}>
+              {text.next}
+            </button>
+          </nav>
         )}
       </section>
     </main>

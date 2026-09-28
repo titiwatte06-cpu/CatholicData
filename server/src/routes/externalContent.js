@@ -13,15 +13,15 @@ function bangkokDateString() {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).format(new Date())
+  }).format(Date.now())
 }
 
 router.get('/daily-reading/today', async (_req, res) => {
   try {
     const today = bangkokDateString()
-    const reading = await DailyReading.findOne({ date: today }).lean()
-      ?? await DailyReading.findOne({ date: { $lte: today } }).sort({ date: -1 }).lean()
-      ?? await DailyReading.findOne().sort({ date: -1 }).lean()
+    const reading = await DailyReading.findOne({ readingDate: today }).lean()
+      ?? await DailyReading.findOne({ readingDate: { $lte: today } }).sort({ readingDate: -1 }).lean()
+      ?? await DailyReading.findOne().sort({ readingDate: -1 }).lean()
 
     if (!reading) return res.status(404).json({ message: 'ยังไม่มีข้อมูลบทอ่านประจำวัน' })
     res.json(reading)
@@ -33,8 +33,18 @@ router.get('/daily-reading/today', async (_req, res) => {
 
 router.get('/news', async (_req, res) => {
   try {
-    const news = await CatholicNews.find().sort({ publishedDate: -1 }).limit(50).lean()
-    res.json(news)
+    const requestedPage = Number.parseInt(_req.query.page, 10) || 1
+    const requestedPageSize = Number.parseInt(_req.query.limit, 10) || 10
+    const pageSize = Math.min(Math.max(requestedPageSize, 1), 20)
+    const total = await CatholicNews.countDocuments()
+    const totalPages = Math.max(1, Math.ceil(total / pageSize))
+    const page = Math.min(Math.max(requestedPage, 1), totalPages)
+    const items = await CatholicNews.find()
+      .sort({ publishedDate: -1, createdAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .lean()
+    res.json({ items, page, pageSize, total, totalPages })
   } catch (error) {
     console.error('Catholic news query failed:', error)
     res.status(500).json({ message: 'โหลดข่าวคาทอลิกไม่สำเร็จ' })
