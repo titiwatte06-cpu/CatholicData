@@ -568,6 +568,65 @@
   object-fit: cover;
   object-position: center;
 }
+
+.church-detail-image-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.church-detail-image-trigger:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.church-image-lightbox {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5vh 5vw;
+  background: rgba(0, 0, 0, 0.88);
+  cursor: zoom-out;
+}
+
+.church-image-lightbox > img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 6px;
+  object-fit: contain;
+  cursor: default;
+}
+
+.church-image-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #ffffff80;
+  border-radius: 50%;
+  background: #111111b3;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.admin-church-thumbnail {
+  width: 64px;
+  height: 48px;
+  flex: none;
+  border-radius: 5px;
+  background: #eee8da;
+  object-fit: cover;
+}
  
 .back-btn {
   display: inline-block;

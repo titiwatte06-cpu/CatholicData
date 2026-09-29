@@ -292,7 +292,21 @@ export default function AdminDashboard() {
                 const displayedPriest = !priest || priest === 'ยังไม่มีข้อมูล' ? text.missing : priest
                 return (
                   <tr key={church.id} className="border-t border-[#DDD9D0]">
-                    <td className="px-6 py-4 font-medium text-[#1C1C1A]">{lang === 'en' ? church.nameEn || church.name : church.name}</td>
+                    <td className="px-6 py-4 font-medium text-[#1C1C1A]">
+                      <div className="flex items-center gap-3">
+                        <img
+                          className="admin-church-thumbnail"
+                          src={church.imageUrl || '/church-placeholder.svg'}
+                          alt={lang === 'en' ? church.nameEn || church.name : church.name}
+                          loading="lazy"
+                          onError={(event) => {
+                            event.currentTarget.onerror = null
+                            event.currentTarget.src = '/church-placeholder.svg'
+                          }}
+                        />
+                        <span>{lang === 'en' ? church.nameEn || church.name : church.name}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-[#1C1C1A]">{getRegionLabel(church.region, lang)}</td>
                     <td className="px-6 py-4 text-[#1C1C1A]">{getDistrictLabel(church.district, lang)}</td>
                     <td className="px-6 py-4 text-[#1C1C1A]">

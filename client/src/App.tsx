@@ -272,18 +272,45 @@ function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: 
   const td = detailText[lang]
   const primaryName = lang === 'th' ? church.name : church.nameEn
   const secondaryName = lang === 'th' ? church.nameEn : null
+  const [imageExpanded, setImageExpanded] = useState(false)
+
+  useEffect(() => {
+    if (!imageExpanded) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setImageExpanded(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [imageExpanded])
+
   return (
     <section className="detail">
       <Link className="back-btn" to="/map">{td.back}</Link>
-      <img
-        className="church-detail-image"
-        src={church.imageUrl || churchPlaceholderImage}
-        alt={primaryName}
-        onError={(event) => {
-          event.currentTarget.onerror = null
-          event.currentTarget.src = churchPlaceholderImage
-        }}
-      />
+      <button type="button" className="church-detail-image-trigger" onClick={() => setImageExpanded(true)} aria-label={lang === 'th' ? `ขยายรูป${primaryName}` : `View larger image of ${primaryName}`}>
+        <img
+          className="church-detail-image"
+          src={church.imageUrl || churchPlaceholderImage}
+          alt={primaryName}
+          onError={(event) => {
+            event.currentTarget.onerror = null
+            event.currentTarget.src = churchPlaceholderImage
+          }}
+        />
+      </button>
+      {imageExpanded && (
+        <div className="church-image-lightbox" role="dialog" aria-modal="true" aria-label={primaryName} onClick={() => setImageExpanded(false)}>
+          <button type="button" className="church-image-lightbox-close" onClick={() => setImageExpanded(false)} aria-label={lang === 'th' ? 'ปิดรูปภาพ' : 'Close image'}>×</button>
+          <img
+            src={church.imageUrl || churchPlaceholderImage}
+            alt={primaryName}
+            onClick={(event) => event.stopPropagation()}
+            onError={(event) => {
+              event.currentTarget.onerror = null
+              event.currentTarget.src = churchPlaceholderImage
+            }}
+          />
+        </div>
+      )}
       <h2>{primaryName}</h2>
       {secondaryName && <p className="detail-en">{secondaryName}</p>}
       <span className="district">{getDistrictLabel(church.district, lang)}</span>
