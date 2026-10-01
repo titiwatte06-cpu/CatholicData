@@ -5,7 +5,10 @@ const regionLabels: Record<Region, { th: string; en: string }> = {
   bangkok: { th: 'กรุงเทพปริมณฑล', en: 'Bangkok Metro' },
   north: { th: 'ภาคเหนือ', en: 'North' },
   central: { th: 'ภาคกลาง', en: 'Central' },
-  south: { th: 'ภาคใต้', en: 'South' },
+  east: { th: 'ภาคตะวันออก', en: 'East' },
+  northeast: { th: 'ภาคตะวันออกเฉียงเหนือ', en: 'Northeast' },
+  west: { th: 'ภาคตะวันตก', en: 'West' },
+  south: { th: 'ภาคใต้', en: 'South' }
 }
 
 export function RegionFilter({

@@ -12,6 +12,9 @@ const regionOptions: { value: RegionFilter; label: { th: string; en: string } }[
   { value: 'bangkok', label: { th: 'กรุงเทพฯ', en: 'Bangkok' } },
   { value: 'north', label: { th: 'ภาคเหนือ', en: 'North' } },
   { value: 'central', label: { th: 'ภาคกลาง', en: 'Central' } },
+  { value: 'east', label: { th: 'ภาคตะวันออก', en: 'East' } },
+  { value: 'northeast', label: { th: 'ภาคตะวันออกเฉียงเหนือ', en: 'Northeast' } },
+  { value: 'west', label: { th: 'ภาคตะวันตก', en: 'West' } },
   { value: 'south', label: { th: 'ภาคใต้', en: 'South' } },
 ]
 

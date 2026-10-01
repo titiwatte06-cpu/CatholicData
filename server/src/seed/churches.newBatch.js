@@ -1,0 +1,90 @@
+export const newChurchesBatch = [
+  {
+    id: 'cathedral-immaculate-conception-chanthaburi',
+    name: 'อาสนวิหารพระนางมารีอาปฏิสนธินิรมล (จันทบุรี)', nameEn: 'Cathedral of the Immaculate Conception, Chanthaburi',
+    district: 'อำเภอเมืองจันทบุรี', province: 'จันทบุรี', region: 'east',
+    address: '110 หมู่ 5 ตำบลจันทนิมิต อำเภอเมือง จันทบุรี 22000',
+    lat: 12.609275, lng: 102.1185796, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อวิเชียร ฉันทพิริยกุล',
+    massSchedule: [
+      { day: 'จันทร์ - เสาร์', times: ['06:00', '19:00'] },
+      { day: 'อาทิตย์', times: ['06:15', '08:30', '19:00'] },
+    ],
+  },
+  {
+    id: 'st-john-apostle-makham', name: 'วัดนักบุญยอห์น อัครธรรมทูต (มะขาม)', nameEn: 'St. John the Apostle Church, Makham',
+    district: 'อำเภอมะขาม', province: 'จันทบุรี', region: 'east',
+    address: '142 หมู่ 1 ตำบลมะขาม อำเภอมะขาม จันทบุรี 22150',
+    lat: 12.6711926, lng: 102.1977335, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อวิเชียร ฉันทพิริยกุล',
+    massSchedule: [{ day: 'อาทิตย์', times: ['09:00'] }],
+  },
+  {
+    id: 'christ-the-king-patong', name: 'วัดพระคริสตราชา (ปะตง)', nameEn: 'Christ the King Church, Patong',
+    district: 'อำเภอสอยดาว', province: 'จันทบุรี', region: 'east',
+    address: '888 หมู่ 5 ตำบลทรายขาว อำเภอสอยดาว จันทบุรี 22180',
+    lat: 13.1153458, lng: 102.2168883, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อวิเชียร ฉันทพิริยกุล',
+    massSchedule: [{ day: 'อาทิตย์', times: ['14:30'] }],
+  },
+  {
+    id: 'our-lady-presentation-moosoo', name: 'วัดแม่พระถวายองค์ (มูซู)', nameEn: 'Presentation of Our Lady Church, Moo Soo',
+    district: 'อำเภอเขาคิชฌกูฏ', province: 'จันทบุรี', region: 'east',
+    address: '1/1 หมู่ 5 ตำบลชากไทย อำเภอเขาคิชฌกูฏ จันทบุรี 22210',
+    lat: 12.7984116, lng: 102.0462054, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อวิเชียร ฉันทพิริยกุล',
+    massSchedule: [{ day: 'อาทิตย์', times: ['15:00'] }],
+  },
+  {
+    id: 'sacred-heart-khlung', name: 'วัดพระหฤทัยแห่งพระเยซูเจ้า (ขลุง)', nameEn: 'Sacred Heart of Jesus Church, Khlung',
+    district: 'อำเภอขลุง', province: 'จันทบุรี', region: 'east',
+    address: '231 ถนนเทศบาลสาย 2 ตำบลขลุง อำเภอขลุง จันทบุรี 22110',
+    lat: 12.4486742, lng: 102.2213302, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อพูนพงษ์ คูนา',
+    massSchedule: [
+      { day: 'จันทร์ - เสาร์', times: ['06:00', '18:00'] },
+      { day: 'อาทิตย์', times: ['06:00', '08:30', '18:00'] },
+    ],
+  },
+  {
+    id: 'annunciation-trat', name: 'วัดแม่พระรับสาร (ตราด)', nameEn: 'Annunciation of the Lord Church, Trat',
+    district: 'อำเภอเมืองตราด', province: 'ตราด', region: 'east',
+    address: '38 ซอยท่าเรือจ้าง 2 ถนนท่าเรือจ้าง ตำบลวังกระแจะ อำเภอเมือง ตราด 23000',
+    lat: 12.2516632, lng: 102.5268817, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อวีระชน นพคุณทอง',
+    massSchedule: [
+      { day: 'จันทร์ - พฤหัสบดี', times: ['06:00'] },
+      { day: 'ศุกร์ (มิสซานักเรียน)', times: ['08:00'] },
+      { day: 'อาทิตย์', times: ['08:00'] },
+    ],
+  },
+  {
+    id: 'st-joseph-worker-thamai', name: 'วัดนักบุญยอแซฟกรรมกร (ท่าใหม่)', nameEn: 'St. Joseph the Worker Church, Tha Mai',
+    district: 'อำเภอท่าใหม่', province: 'จันทบุรี', region: 'east',
+    address: '115 ถนนศรีนวดิตถ์ ตำบลท่าใหม่ อำเภอท่าใหม่ จันทบุรี 22120',
+    lat: 12.6210159, lng: 102.006641, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อเกียรติศักดิ์ รุ่งเรือง',
+    massSchedule: [
+      { day: 'จันทร์ - พุธ', times: ['18:30'] },
+      { day: 'ศุกร์ - เสาร์', times: ['18:30'] },
+      { day: 'อาทิตย์', times: ['08:00'] },
+    ],
+  },
+  {
+    id: 'st-francis-xavier-thasala', name: 'วัดนักบุญฟรังซิสเซเวียร์ (ท่าศาลา)', nameEn: 'St. Francis Xavier Church, Tha Sala',
+    district: 'อำเภอท่าใหม่', province: 'จันทบุรี', region: 'east',
+    address: '9/3 หมู่ 2 ตำบลรำพัน อำเภอท่าใหม่ จันทบุรี 22170',
+    lat: 12.6248437, lng: 101.9147214, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อเกียรติศักดิ์ รุ่งเรือง',
+    massSchedule: [{ day: 'อาทิตย์', times: ['11:00'] }],
+  },
+  {
+    id: 'chair-of-st-peter-thachalaep', name: 'วัดธรรมาสน์นักบุญเปโตร (ท่าแฉลบ)', nameEn: 'Chair of St. Peter Church, Tha Chalaep',
+    district: 'อำเภอเมืองจันทบุรี', province: 'จันทบุรี', region: 'east',
+    address: '101/1 หมู่ 10 ตำบลบางกะจะ อำเภอเมือง จันทบุรี 22000',
+    lat: 12.5341565, lng: 102.0543506, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อชูชาติ ชุณหกิจ',
+    massSchedule: [
+      { day: 'จันทร์ - เสาร์', times: ['18:00'] },
+      { day: 'อาทิตย์', times: ['10:00'] },
+    ],
+  },
+  {
+    id: 'guardian-angels-laempradu', name: 'วัดอารักขเทวดา (แหลมประดู่)', nameEn: 'Guardian Angels Church, Laem Pradu',
+    district: 'อำเภอแหลมสิงห์', province: 'จันทบุรี', region: 'east',
+    address: '15 หมู่ 2 ตำบลบางกะไชย อำเภอแหลมสิงห์ จันทบุรี 22120',
+    lat: 12.520217, lng: 102.0617039, openHours: 'ยังไม่มีข้อมูล', priest: 'คุณพ่อชูชาติ ชุณหกิจ',
+    massSchedule: [{ day: 'อาทิตย์', times: ['07:30'] }],
+  },
+]
