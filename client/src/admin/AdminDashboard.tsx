@@ -7,6 +7,8 @@ import { useLanguage } from '../LanguageContext'
 type RegionFilter = 'all' | Church['region']
 type ChurchEditForm = Omit<Church, 'massSchedule'> & { massScheduleText: string }
 
+const PAGE_SIZE = 20
+
 const regionOptions: { value: RegionFilter; label: { th: string; en: string } }[] = [
   { value: 'all', label: { th: 'ทุกสังฆมณฑล', en: 'All dioceses' } },
   { value: 'bangkok', label: { th: 'อัครสังฆมณฑลกรุงเทพฯ', en: 'Archdiocese of Bangkok' } },
@@ -92,6 +94,8 @@ export default function AdminDashboard() {
     deleteConfirm: (name: string) => `ต้องการลบ "${name}" ใช่ไหม? การลบไม่สามารถย้อนกลับได้`,
     deleteError: 'ลบข้อมูลไม่สำเร็จ กรุณาตรวจสอบสิทธิ์ผู้ดูแลระบบแล้วลองอีกครั้ง',
     deleted: 'ลบข้อมูลเรียบร้อยแล้ว',
+    prev: 'ก่อนหน้า', next: 'ถัดไป',
+    pageOf: (p: number, total: number) => `หน้า ${p} จาก ${total}`,
   } : {
     title: 'Church Dashboard',
     total: 'Total churches',
@@ -117,12 +121,15 @@ export default function AdminDashboard() {
     deleteConfirm: (name: string) => `Delete "${name}"? This cannot be undone.`,
     deleteError: 'Could not delete. Check your admin access and try again.',
     deleted: 'Deleted successfully.',
+    prev: 'Previous', next: 'Next',
+    pageOf: (p: number, total: number) => `Page ${p} of ${total}`,
   }
   const [churches, setChurches] = useState<Church[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedRegion, setSelectedRegion] = useState<RegionFilter>('all')
+  const [page, setPage] = useState(1)
   const [editingChurch, setEditingChurch] = useState<Church | null>(null)
   const [editForm, setEditForm] = useState<ChurchEditForm | null>(null)
   const [saving, setSaving] = useState(false)
@@ -148,6 +155,11 @@ export default function AdminDashboard() {
     fetchChurches()
   }, [])
 
+  // กลับไปหน้า 1 ทุกครั้งที่เปลี่ยนคำค้นหรือเปลี่ยนภาค กันค้างอยู่หน้าท้ายๆ ที่ไม่มีข้อมูลแล้ว
+  useEffect(() => {
+    setPage(1)
+  }, [query, selectedRegion])
+
   const now = useMemo(() => new Date(), [])
 
   const stats = useMemo(() => {
@@ -164,6 +176,9 @@ export default function AdminDashboard() {
       .includes(query.toLowerCase())
     return matchesQuery && (selectedRegion === 'all' || church.region === selectedRegion)
   })
+
+  const totalPages = Math.max(1, Math.ceil(filteredChurches.length / PAGE_SIZE))
+  const paginatedChurches = filteredChurches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const openEditor = (church: Church) => {
     setEditingChurch(church)
@@ -343,7 +358,7 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {filteredChurches.map((church) => {
+              {paginatedChurches.map((church) => {
                 const complete = church.priest && church.massSchedule?.length && church.imageUrl
                 const priest = lang === 'en' ? church.priestEn || church.priest : church.priest
                 const displayedPriest = !priest || priest === 'ยังไม่มีข้อมูล' ? text.missing : priest
@@ -409,6 +424,30 @@ export default function AdminDashboard() {
           </table>
         )}
       </div>
+
+      {!loading && filteredChurches.length > 0 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-sm text-[#8A8780]">{text.pageOf(page, totalPages)}</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-2 text-sm border border-[#DDD9D0] rounded-md text-[#4B4945] hover:bg-[#F8F6F2] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {text.prev}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-2 text-sm border border-[#DDD9D0] rounded-md text-[#4B4945] hover:bg-[#F8F6F2] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {text.next}
+            </button>
+          </div>
+        </div>
+      )}
 
       {editingChurch && editForm && (
         <div
