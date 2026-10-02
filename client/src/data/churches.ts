@@ -6,8 +6,19 @@ export type MassSchedule = {
   durationMinutes?: number // ระยะเวลา default ของทุกรอบในแถวนี้ (ถ้าไม่ตั้งจะใช้ของวัด หรือ 60 นาที)
 }
 
-export type Region = 'bangkok' | 'north' | 'central' | 'east' | 'south' | 'northeast' | 'west'
-
+export type Region =
+  | 'bangkok'
+  | 'tharae-nongsaeng'
+  | 'chiang-mai'
+  | 'nakhon-sawan'
+  | 'ratchaburi'
+  | 'nakhon-ratchasima'
+  | 'ubon-ratchathani'
+  | 'udon-thani'
+  | 'chanthaburi'
+  | 'surat-thani'
+  | 'chiang-rai'
+  
 const districtLabelsEn: Record<string, string> = {
   'เขตบางรัก': 'Bang Rak District',
   'เขตสาทร': 'Sathon District',

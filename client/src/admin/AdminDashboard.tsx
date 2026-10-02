@@ -8,14 +8,18 @@ type RegionFilter = 'all' | Church['region']
 type ChurchEditForm = Omit<Church, 'massSchedule'> & { massScheduleText: string }
 
 const regionOptions: { value: RegionFilter; label: { th: string; en: string } }[] = [
-  { value: 'all', label: { th: 'ทุกภาค', en: 'All regions' } },
-  { value: 'bangkok', label: { th: 'กรุงเทพฯ', en: 'Bangkok' } },
-  { value: 'north', label: { th: 'ภาคเหนือ', en: 'North' } },
-  { value: 'central', label: { th: 'ภาคกลาง', en: 'Central' } },
-  { value: 'east', label: { th: 'ภาคตะวันออก', en: 'East' } },
-  { value: 'northeast', label: { th: 'ภาคตะวันออกเฉียงเหนือ', en: 'Northeast' } },
-  { value: 'west', label: { th: 'ภาคตะวันตก', en: 'West' } },
-  { value: 'south', label: { th: 'ภาคใต้', en: 'South' } },
+  { value: 'all', label: { th: 'ทุกสังฆมณฑล', en: 'All dioceses' } },
+  { value: 'bangkok', label: { th: 'อัครสังฆมณฑลกรุงเทพฯ', en: 'Archdiocese of Bangkok' } },
+  { value: 'tharae-nongsaeng', label: { th: 'อัครสังฆมณฑลท่าแร่-หนองแสง', en: 'Archdiocese of Thare-Nongsaeng' } },
+  { value: 'chiang-mai', label: { th: 'สังฆมณฑลเชียงใหม่', en: 'Diocese of Chiang Mai' } },
+  { value: 'nakhon-sawan', label: { th: 'สังฆมณฑลนครสวรรค์', en: 'Diocese of Nakhon Sawan' } },
+  { value: 'ratchaburi', label: { th: 'สังฆมณฑลราชบุรี', en: 'Diocese of Ratchaburi' } },
+  { value: 'nakhon-ratchasima', label: { th: 'สังฆมณฑลนครราชสีมา', en: 'Diocese of Nakhon Ratchasima' } },
+  { value: 'ubon-ratchathani', label: { th: 'สังฆมณฑลอุบลราชธานี', en: 'Diocese of Ubon Ratchathani' } },
+  { value: 'udon-thani', label: { th: 'สังฆมณฑลอุดรธานี', en: 'Diocese of Udon Thani' } },
+  { value: 'chanthaburi', label: { th: 'สังฆมณฑลจันทบุรี', en: 'Diocese of Chanthaburi' } },
+  { value: 'surat-thani', label: { th: 'สังฆมณฑลสุราษฎร์ธานี', en: 'Diocese of Surat Thani' } },
+  { value: 'chiang-rai', label: { th: 'สังฆมณฑลเชียงราย', en: 'Diocese of Chiang Rai' } },
 ]
 
 const massDayLabels: Record<string, string> = {
@@ -83,6 +87,11 @@ export default function AdminDashboard() {
     churchEnglish: 'ชื่อวัด (English)', province: 'จังหวัด', address: 'ที่อยู่', image: 'URL รูปภาพ',
     latitude: 'ละติจูด', longitude: 'ลองจิจูด', openHours: 'เวลาเปิด-ปิด', cancel: 'ยกเลิก',
     saving: 'กำลังบันทึก...', save: 'บันทึกข้อมูล', massPlaceholder: 'จันทร์ - เสาร์: 06:00, 18:00; อาทิตย์: 07:00, 09:00',
+    delete: 'ลบ', deleting: 'กำลังลบ...',
+    deleteTitle: 'ยืนยันการลบข้อมูล',
+    deleteConfirm: (name: string) => `ต้องการลบ "${name}" ใช่ไหม? การลบไม่สามารถย้อนกลับได้`,
+    deleteError: 'ลบข้อมูลไม่สำเร็จ กรุณาตรวจสอบสิทธิ์ผู้ดูแลระบบแล้วลองอีกครั้ง',
+    deleted: 'ลบข้อมูลเรียบร้อยแล้ว',
   } : {
     title: 'Church Dashboard',
     total: 'Total churches',
@@ -103,6 +112,11 @@ export default function AdminDashboard() {
     churchEnglish: 'Church name (English)', province: 'Province', address: 'Address', image: 'Image URL',
     latitude: 'Latitude', longitude: 'Longitude', openHours: 'Opening hours', cancel: 'Cancel',
     saving: 'Saving...', save: 'Save changes', massPlaceholder: 'Monday - Saturday: 06:00, 18:00; Sunday: 07:00, 09:00',
+    delete: 'Delete', deleting: 'Deleting...',
+    deleteTitle: 'Confirm deletion',
+    deleteConfirm: (name: string) => `Delete "${name}"? This cannot be undone.`,
+    deleteError: 'Could not delete. Check your admin access and try again.',
+    deleted: 'Deleted successfully.',
   }
   const [churches, setChurches] = useState<Church[]>([])
   const [loading, setLoading] = useState(true)
@@ -114,6 +128,9 @@ export default function AdminDashboard() {
   const [saving, setSaving] = useState(false)
   const [editError, setEditError] = useState('')
   const [notice, setNotice] = useState('')
+  const [confirmDeleteChurch, setConfirmDeleteChurch] = useState<Church | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState('')
 
   useEffect(() => {
     const fetchChurches = async () => {
@@ -205,6 +222,37 @@ export default function AdminDashboard() {
     }
   }
 
+  const requestDelete = (church: Church) => {
+    setConfirmDeleteChurch(church)
+    setDeleteError('')
+  }
+
+  const cancelDelete = () => {
+    if (deletingId) return
+    setConfirmDeleteChurch(null)
+  }
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteChurch) return
+    const church = confirmDeleteChurch
+    setDeletingId(church.id)
+    setDeleteError('')
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/churches/${church.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      if (!response.ok) throw new Error(text.deleteError)
+      setChurches((current) => current.filter((c) => c.id !== church.id))
+      setNotice(`${lang === 'th' ? church.name : (church.nameEn || church.name)} — ${text.deleted}`)
+      setConfirmDeleteChurch(null)
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : text.deleteError)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const statCards = [
     { label: text.total, value: stats.total, accent: true },
     { label: text.massNow, value: stats.massNow },
@@ -236,6 +284,12 @@ export default function AdminDashboard() {
       {notice && (
         <div role="status" className="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
           {notice}
+        </div>
+      )}
+
+      {deleteError && (
+        <div role="alert" className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+          {deleteError}
         </div>
       )}
 
@@ -330,13 +384,23 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button
-                        type="button"
-                        onClick={() => openEditor(church)}
-                        className="text-[#6B2737] font-medium hover:underline whitespace-nowrap"
-                      >
-                        {text.action}
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => openEditor(church)}
+                          className="text-[#6B2737] font-medium hover:underline whitespace-nowrap"
+                        >
+                          {text.action}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => requestDelete(church)}
+                          disabled={deletingId === church.id}
+                          className="text-red-600 font-medium hover:underline whitespace-nowrap disabled:opacity-50"
+                        >
+                          {deletingId === church.id ? text.deleting : text.delete}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
@@ -408,6 +472,45 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {confirmDeleteChurch && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(event) => { if (event.target === event.currentTarget) cancelDelete() }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-delete-title"
+            className="w-full max-w-sm rounded-lg bg-white shadow-xl p-6"
+          >
+            <h2 id="confirm-delete-title" className="text-lg font-semibold text-[#1C1C1A] mb-2">
+              {text.deleteTitle}
+            </h2>
+            <p className="text-sm text-[#020202] mb-6">
+              {text.deleteConfirm(lang === 'th' ? confirmDeleteChurch.name : (confirmDeleteChurch.nameEn || confirmDeleteChurch.name))}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={cancelDelete}
+                disabled={!!deletingId}
+                className="rounded border border-[#DDD9D0] px-4 py-2 text-sm text-black"
+              >
+                {text.cancel}
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={!!deletingId}
+                className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {deletingId ? text.deleting : text.delete}
+              </button>
+            </div>
           </section>
         </div>
       )}

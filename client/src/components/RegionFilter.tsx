@@ -2,13 +2,17 @@
 import type { Region } from '../data/churches'
 
 const regionLabels: Record<Region, { th: string; en: string }> = {
-  bangkok: { th: 'กรุงเทพปริมณฑล', en: 'Bangkok Metro' },
-  north: { th: 'ภาคเหนือ', en: 'North' },
-  central: { th: 'ภาคกลาง', en: 'Central' },
-  east: { th: 'ภาคตะวันออก', en: 'East' },
-  northeast: { th: 'ภาคตะวันออกเฉียงเหนือ', en: 'Northeast' },
-  west: { th: 'ภาคตะวันตก', en: 'West' },
-  south: { th: 'ภาคใต้', en: 'South' }
+  'bangkok': { th: 'อัครสังฆมณฑลกรุงเทพฯ', en: 'Archdiocese of Bangkok' },
+  'tharae-nongsaeng': { th: 'อัครสังฆมณฑลท่าแร่-หนองแสง', en: 'Archdiocese of Thare-Nongsaeng' },
+  'chiang-mai': { th: 'สังฆมณฑลเชียงใหม่', en: 'Diocese of Chiang Mai' },
+  'nakhon-sawan': { th: 'สังฆมณฑลนครสวรรค์', en: 'Diocese of Nakhon Sawan' },
+  'ratchaburi': { th: 'สังฆมณฑลราชบุรี', en: 'Diocese of Ratchaburi' },
+  'nakhon-ratchasima': { th: 'สังฆมณฑลนครราชสีมา', en: 'Diocese of Nakhon Ratchasima' },
+  'ubon-ratchathani': { th: 'สังฆมณฑลอุบลราชธานี', en: 'Diocese of Ubon Ratchathani' },
+  'udon-thani': { th: 'สังฆมณฑลอุดรธานี', en: 'Diocese of Udon Thani' },
+  'chanthaburi': { th: 'สังฆมณฑลจันทบุรี', en: 'Diocese of Chanthaburi' },
+  'surat-thani': { th: 'สังฆมณฑลสุราษฎร์ธานี', en: 'Diocese of Surat Thani' },
+  'chiang-rai': { th: 'สังฆมณฑลเชียงราย', en: 'Diocese of Chiang Rai' },
 }
 
 export function RegionFilter({
