@@ -10,6 +10,9 @@
 
 🛠️ Admin Dashboard: หน้าจัดการหลังบ้าน สำหรับมอนิเตอร์และเช็คสถานะความครบถ้วนของข้อมูลวัด
 
+<img width="1900" height="943" alt="image" src="https://github.com/user-attachments/assets/3e142b27-ec6f-4e62-8df8-ae96a44236c9" />
+
+
 🌐 Bilingual Support: รองรับการใช้งานทั้งภาษาไทยและภาษาอังกฤษ (EN)
 
 💻 Tech Stack (เครื่องมือทำมาหากิน)
