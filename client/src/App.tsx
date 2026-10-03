@@ -2,6 +2,11 @@ import { useCallback, useEffect, useRef, useState, type ReactNode, type FormEven
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+// ⬅️ แก้ตรงนี้ (cluster): ต้องติดตั้ง npm i leaflet.markercluster @types/leaflet.markercluster
+// และต้อง import หลัง 'leaflet' เสมอ (ปลั๊กอินใช้ตัวแปร L ที่ leaflet ตั้งไว้ให้)
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import './App.css'
 import logo from '../src/assets/logo.svg';
 
@@ -169,26 +174,66 @@ export function HomePage() {
   );
 }
 
-function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; now: Date; churches: Church[] }) {
+// ⬅️ แก้ตรงนี้ (cluster): แยกการสร้างไอคอนหมุดออกมา เพื่อใช้ซ้ำตอนเปลี่ยนสถานะ "ถูกเลือก" โดยไม่ต้องสร้างหมุดใหม่ทั้งหมด
+function createChurchIcon(church: Church, now: Date, isSelected: boolean) {
+  const alert = getMassAlert(church, now)
+  return L.divIcon({
+    className: `church-marker-icon ${alert.active ? 'is-open' : ''} ${isSelected ? 'is-selected' : ''}`,
+    html: `<span class="church-marker-pin"></span>${alert.active ? `<span class="church-marker-badge">มิสซา ${alert.time} น.</span>` : ''}`,
+    iconSize: [34, 42],
+    iconAnchor: [17, 42],
+  })
+}
+
+// ⬅️ แก้ตรงนี้ (การ์ดแยก): ระยะที่ต้องเว้นไว้ฝั่งซ้าย/ล่าง ตอนเลื่อนแผนที่ไปหาวัดที่เลือก
+// เพื่อไม่ให้หมุดไปอยู่ใต้การ์ด filter และการ์ดรายละเอียด (ตัวเลขต้องสัมพันธ์กับความกว้างใน App.css)
+function getFocusPadding(): { topLeft: [number, number]; bottomRight: [number, number] } {
+  const width = window.innerWidth
+  if (width <= 700) return { topLeft: [0, 0], bottomRight: [0, Math.round(window.innerHeight * 0.55)] }
+  if (width <= 1150) return { topLeft: [700, 0], bottomRight: [0, 0] }
+  return { topLeft: [790, 0], bottomRight: [0, 0] }
+}
+
+// ⬅️ แก้ตรงนี้ (การ์ดแยก): เพิ่ม prop selected เพื่อให้แผนที่รู้ว่าวัดไหนถูกเลือกอยู่
+function MapView({ onSelect, now, churches, selected }: { onSelect: (id: string) => void; now: Date; churches: Church[]; selected?: Church }) {
   const mapElement = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
-  const markerLayerRef = useRef<L.LayerGroup | null>(null)
+  // ⬅️ แก้ตรงนี้ (cluster): เปลี่ยนจาก L.LayerGroup เป็น MarkerClusterGroup
+  const markerLayerRef = useRef<L.MarkerClusterGroup | null>(null)
+  const markersRef = useRef<Map<string, { marker: L.Marker; church: Church }>>(new Map())
+  const prevSelectedIdRef = useRef<string | undefined>(undefined)
   const locationLayerRef = useRef<L.LayerGroup | null>(null)
   const [locating, setLocating] = useState(false)
   const [locationError, setLocationError] = useState(false)
+  const selectedId = selected?.id
+  const selectedLat = selected?.lat
+  const selectedLng = selected?.lng
+  // ⬅️ แก้ตรงนี้ (cluster): สรุปสถานะ "มีมิสซาตอนนี้" ของทุกวัดเป็นข้อความเดียว
+  // ใช้แทนการ rebuild ทุก 30 วินาที เพื่อไม่ให้กลุ่มหมุดที่กางอยู่หุบกลับเอง
+  const markerSignature = churches.map((church) => {
+    const alert = getMassAlert(church, now)
+    return `${church.id}:${alert.active}:${alert.time}`
+  }).join('|')
+
   useEffect(() => {
     if (!mapElement.current) return
     const map = L.map(mapElement.current, { zoomControl: false }).setView(mapCenter, 12)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map)
     L.control.zoom({ position: 'bottomright' }).addTo(map)
     mapRef.current = map
-    markerLayerRef.current = L.layerGroup().addTo(map)
+    markerLayerRef.current = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 50,
+      spiderfyOnMaxZoom: true,
+      disableClusteringAtZoom: 18,
+    }).addTo(map)
     locationLayerRef.current = L.layerGroup().addTo(map)
     return () => {
       map.remove()
       mapRef.current = null
       markerLayerRef.current = null
       locationLayerRef.current = null
+      markersRef.current.clear()
     }
   }, [])
 
@@ -233,24 +278,59 @@ function MapView({ onSelect, now, churches }: { onSelect: (id: string) => void; 
     )
   }
 
+  // ⬅️ แก้ตรงนี้ (cluster): สร้างหมุดทั้งหมดแล้วใส่ใน cluster group ทีเดียว (addLayers เร็วกว่าใส่ทีละอัน)
+  // สร้างใหม่เฉพาะตอนรายชื่อวัดเปลี่ยน หรือสถานะ "มีมิสซา" เปลี่ยน — ไม่ใช่ทุกครั้งที่นาฬิกาเดิน
   useEffect(() => {
     const markerLayer = markerLayerRef.current
     if (!markerLayer) return
     markerLayer.clearLayers()
-    churches.forEach((church) => {
-      const alert = getMassAlert(church, now)
+    markersRef.current.clear()
+    const markers = churches.map((church) => {
       const marker = L.marker([church.lat, church.lng], {
-        icon: L.divIcon({
-          className: `church-marker-icon ${alert.active ? 'is-open' : ''}`,
-          html: `<span class="church-marker-pin"></span>${alert.active ? `<span class="church-marker-badge">มิสซา ${alert.time} น.</span>` : ''}`,
-          iconSize: [34, 42],
-          iconAnchor: [17, 42],
-        }),
-      }).addTo(markerLayer)
+        icon: createChurchIcon(church, now, church.id === selectedId),
+      })
       marker.bindTooltip(church.name, { direction: 'top', offset: [0, -36] })
       marker.on('click', () => onSelect(church.id))
+      markersRef.current.set(church.id, { marker, church })
+      return marker
     })
-  }, [onSelect, now, churches])
+    markerLayer.addLayers(markers)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onSelect, churches, markerSignature])
+
+  // ⬅️ แก้ตรงนี้ (การ์ดแยก): เปลี่ยนไอคอนเฉพาะหมุดเดิม/หมุดใหม่ที่ถูกเลือก (มีวงแสงอำพันรอบหมุด)
+  useEffect(() => {
+    const prevId = prevSelectedIdRef.current
+    prevSelectedIdRef.current = selectedId
+    ;[prevId, selectedId].forEach((id) => {
+      if (!id) return
+      const entry = markersRef.current.get(id)
+      if (entry) entry.marker.setIcon(createChurchIcon(entry.church, now, id === selectedId))
+    })
+  }, [selectedId, now])
+
+  // ⬅️ แก้ตรงนี้ (การ์ดแยก): เมื่อเลือกวัด ให้เลื่อน/ซูมแผนที่ไปที่วัดนั้น โดยเว้นที่ให้การ์ด
+  // ถ้าหมุดยังซ่อนอยู่ใน cluster จะซูมลงจนเห็นเป็นหมุดเดี่ยวก่อน
+  useEffect(() => {
+    const map = mapRef.current
+    const markerLayer = markerLayerRef.current
+    if (!map || !markerLayer || !selectedId || selectedLat === undefined || selectedLng === undefined) return
+    const padding = getFocusPadding()
+    const topLeft: [number, number] = padding.topLeft[0] > map.getSize().x - 160 ? [0, 0] : padding.topLeft
+    const focus = () => {
+      map.fitBounds(
+        L.latLngBounds([[selectedLat, selectedLng], [selectedLat, selectedLng]]),
+        { paddingTopLeft: topLeft, paddingBottomRight: padding.bottomRight, maxZoom: Math.max(map.getZoom(), 16), animate: true },
+      )
+    }
+    const entry = markersRef.current.get(selectedId)
+    if (entry && markerLayer.getVisibleParent(entry.marker) !== entry.marker) {
+      markerLayer.zoomToShowLayer(entry.marker, focus)
+    } else {
+      focus()
+    }
+  }, [selectedId, selectedLat, selectedLng])
+
   return (
     <div className="map-container">
       <div ref={mapElement} className="map" aria-label="แผนที่วัดคาทอลิกในกรุงเทพฯ" />
@@ -285,7 +365,7 @@ function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: 
 
   return (
     <section className="detail">
-      <Link className="back-btn" to="/map">{td.back}</Link>
+      {/* ⬅️ แก้ตรงนี้ (การ์ดแยก): เอาปุ่ม "← กลับไปยังรายการวัด" ออก เพราะการ์ดนี้มีปุ่มปิด (×) ของตัวเองแล้ว (อยู่ใน MapPage) */}
       <button type="button" className="church-detail-image-trigger" onClick={() => setImageExpanded(true)} aria-label={lang === 'th' ? `ขยายรูป${primaryName}` : `View larger image of ${primaryName}`}>
         <img
           className="church-detail-image"
@@ -693,6 +773,8 @@ export function MapPage() {
   // ⬇️ เพิ่มใหม่: state เก็บภาคที่เลือก (เซ็ตว่าง = แสดงทุกภาค กันหน้าว่างเปล่าตอนเปิดหน้าครั้งแรก)
   const [selectedRegions, setSelectedRegions] = useState<Set<Region>>(new Set())
   const [showLiveMassOnly, setShowLiveMassOnly] = useState(false)
+  // ⬅️ แก้ตรงนี้ (bottom sheet มือถือ): เปิด/พับการ์ด filter (ปุ่มจับจะแสดงเฉพาะจอมือถือ ตาม CSS)
+  const [sheetOpen, setSheetOpen] = useState(true)
 
   const toggleRegion = useCallback((region: Region) => {
     setSelectedRegions((prev) => {
@@ -733,7 +815,7 @@ export function MapPage() {
 
   const selectedChurch = churches.find((church) => church.id === churchId)
 
-  // ⬇️ แก้ตรงนี้: กรองตามภาคก่อน แล้วค่อยกรองตาม query ค้นหาต่อ (สองชั้น)
+  // ⬅️ แก้ตรงนี้: กรองตามภาคก่อน แล้วค่อยกรองตาม query ค้นหาต่อ (สองชั้น)
   const regionFilteredChurches = selectedRegions.size === 0
     ? churches
     : churches.filter((church) => selectedRegions.has(church.region))
@@ -800,87 +882,103 @@ export function MapPage() {
         </nav>
       </header>
       <div className="map-layout">
-        <aside className="map-sidebar">
+        <aside className={`map-sidebar${sheetOpen ? '' : ' is-collapsed'}`}>
+          {/* ⬅️ แก้ตรงนี้ (bottom sheet มือถือ): ปุ่มจับสำหรับพับ/เปิดการ์ด (ซ่อนบนเดสก์ท็อปด้วย CSS) */}
+          <button
+            type="button"
+            className="map-sheet-handle"
+            onClick={() => setSheetOpen((current) => !current)}
+            aria-expanded={sheetOpen}
+            aria-label={lang === 'th' ? 'เปิด/พับแผงค้นหา' : 'Toggle search panel'}
+          />
           <header className="map-sidebar-heading">
             <p className="map-sidebar-eyebrow">{lang === 'th' ? 'สำรวจแผนที่' : 'EXPLORE THE MAP'}</p>
             <h1>{tm.heading}</h1>
           </header>
-          {!selectedChurch && (
-            <>
-              <section className="map-control-section" aria-labelledby="region-filter-heading">
-                <div className="map-control-heading">
-                  <span className="map-control-index">01</span>
-                  <h2 id="region-filter-heading">{lang === 'th' ? 'เลือกภาค' : 'Regions'}</h2>
-                </div>
-                <RegionFilter
-                  selected={selectedRegions}
-                  onToggle={toggleRegion}
-                  onReset={() => setSelectedRegions(new Set())}
-                  lang={lang}
-                />
-              </section>
-              <section className="map-control-section map-search-section" aria-labelledby="church-search-heading">
-                <div className="map-control-heading">
-                  <span className="map-control-index">02</span>
-                  <h2 id="church-search-heading">{lang === 'th' ? 'ค้นหาวัด' : 'Find a church'}</h2>
-                </div>
-                <div className="map-search-wrap">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="10.8" cy="10.8" r="6.3" />
-                    <path d="m15.4 15.4 4.1 4.1" />
-                  </svg>
-                  <input
-                    id="map-church-search"
-                    className="map-search-input"
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder={tm.searchPlaceholder}
-                    aria-label={tm.searchPlaceholder}
-                  />
-                  {query && (
-                    <button type="button" className="map-search-clear" onClick={() => setQuery('')} aria-label={lang === 'th' ? 'ล้างคำค้นหา' : 'Clear search'}>
-                      ×
-                    </button>
-                  )}
-                </div>
-              </section>
-              <button
-                type="button"
-                className={`live-mass-filter ${showLiveMassOnly ? 'is-active' : ''}`}
-                onClick={() => setShowLiveMassOnly((current) => !current)}
-                aria-pressed={showLiveMassOnly}
-              >
-                <span className="live-mass-dot" aria-hidden="true" />
-                {lang === 'th' ? 'วัดที่กำลังมีมิสซา' : 'Mass happening now'}
-              </button>
-              <section className="map-control-section map-manage-section" aria-labelledby="map-manage-heading">
-                <div className="map-control-heading">
-                  <span className="map-control-index">03</span>
-                  <h2 id="map-manage-heading">{lang === 'th' ? 'จัดการข้อมูล' : 'Church data'}</h2>
-                </div>
-                <div className="sidebar-actions">
-                <button type="button" className="sidebar-action-btn sidebar-action-add" onClick={() => setActiveModal('add')}>
-                  {tm.add}
+          {/* ⬅️ แก้ตรงนี้ (การ์ดแยก): การ์ด filter แสดงตลอด ไม่ซ่อนตอนเลือกวัดแล้ว (เดิมมีเงื่อนไข !selectedChurch) */}
+          <section className="map-control-section" aria-labelledby="region-filter-heading">
+            <div className="map-control-heading">
+              <span className="map-control-index">01</span>
+              <h2 id="region-filter-heading">{lang === 'th' ? 'เลือกภาค' : 'Regions'}</h2>
+            </div>
+            <RegionFilter
+              selected={selectedRegions}
+              onToggle={toggleRegion}
+              onReset={() => setSelectedRegions(new Set())}
+              lang={lang}
+            />
+          </section>
+          <section className="map-control-section map-search-section" aria-labelledby="church-search-heading">
+            <div className="map-control-heading">
+              <span className="map-control-index">02</span>
+              <h2 id="church-search-heading">{lang === 'th' ? 'ค้นหาวัด' : 'Find a church'}</h2>
+            </div>
+            <div className="map-search-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="10.8" cy="10.8" r="6.3" />
+                <path d="m15.4 15.4 4.1 4.1" />
+              </svg>
+              <input
+                id="map-church-search"
+                className="map-search-input"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={tm.searchPlaceholder}
+                aria-label={tm.searchPlaceholder}
+              />
+              {query && (
+                <button type="button" className="map-search-clear" onClick={() => setQuery('')} aria-label={lang === 'th' ? 'ล้างคำค้นหา' : 'Clear search'}>
+                  ×
                 </button>
-                <button type="button" className="sidebar-action-btn sidebar-action-remove" onClick={() => setActiveModal('delete')}>
-                  {tm.remove}
-                </button>
-                </div>
-              </section>
-              <div className="map-sidebar-results" aria-live="polite">
-                <span className="map-sidebar-results-dot" aria-hidden="true" />
-                {lang === 'th' ? `แสดง ${visibleChurches.length} วัดบนแผนที่` : `Showing ${visibleChurches.length} churches on map`}
-              </div>
-              {!isAuthenticated && (
-                <p className="sidebar-hint">{tm.hint}</p>
               )}
-            </>
+            </div>
+          </section>
+          <button
+            type="button"
+            className={`live-mass-filter ${showLiveMassOnly ? 'is-active' : ''}`}
+            onClick={() => setShowLiveMassOnly((current) => !current)}
+            aria-pressed={showLiveMassOnly}
+          >
+            <span className="live-mass-dot" aria-hidden="true" />
+            {lang === 'th' ? 'วัดที่กำลังมีมิสซา' : 'Mass happening now'}
+          </button>
+          <section className="map-control-section map-manage-section" aria-labelledby="map-manage-heading">
+            <div className="map-control-heading">
+              <span className="map-control-index">03</span>
+              <h2 id="map-manage-heading">{lang === 'th' ? 'จัดการข้อมูล' : 'Church data'}</h2>
+            </div>
+            <div className="sidebar-actions">
+            <button type="button" className="sidebar-action-btn sidebar-action-add" onClick={() => setActiveModal('add')}>
+              {tm.add}
+            </button>
+            <button type="button" className="sidebar-action-btn sidebar-action-remove" onClick={() => setActiveModal('delete')}>
+              {tm.remove}
+            </button>
+            </div>
+          </section>
+          <div className="map-sidebar-results" aria-live="polite">
+            <span className="map-sidebar-results-dot" aria-hidden="true" />
+            {lang === 'th' ? `แสดง ${visibleChurches.length} วัดบนแผนที่` : `Showing ${visibleChurches.length} churches on map`}
+          </div>
+          {!isAuthenticated && (
+            <p className="sidebar-hint">{tm.hint}</p>
           )}
-          {selectedChurch ? (
-            <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAuthenticated} lang={lang} />
-          ) : null}
         </aside>
-        <main className="map-wrap"><MapView onSelect={selectChurch} now={now} churches={visibleChurches} /></main>
+        {/* ⬅️ แก้ตรงนี้ (การ์ดแยก): การ์ดรายละเอียดวัดเป็นอีกใบ แยกออกมาจากการ์ด filter (เดิมอยู่ใน <aside> เดียวกัน) */}
+        {selectedChurch && (
+          <aside className="church-popcard" aria-label={lang === 'th' ? 'รายละเอียดวัด' : 'Church details'}>
+            <button
+              type="button"
+              className="church-popcard-close"
+              onClick={() => navigate('/map')}
+              aria-label={lang === 'th' ? 'ปิดรายละเอียดวัด' : 'Close church details'}
+            >
+              ×
+            </button>
+            <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAuthenticated} lang={lang} />
+          </aside>
+        )}
+        <main className="map-wrap"><MapView onSelect={selectChurch} now={now} churches={visibleChurches} selected={selectedChurch} /></main>
       </div>
       {activeModal === 'add' && <AddChurchModal direct={isAuthenticated} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
       {activeModal === 'delete' && <DeleteChurchModal direct={isAuthenticated} churches={churches} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}

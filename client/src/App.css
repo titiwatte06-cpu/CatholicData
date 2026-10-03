@@ -1,22 +1,84 @@
 /* ============================================================
+   app-marian-red.css — "Marian Red"
+   แนวคิด: แดงแม่พระ (Marian red) + ทรายอุ่น + แสงเทียน (amber) แถบบนสีดำ
+   - แผนที่เต็มจอ แผงค้นหาเป็นการ์ดลอย และมี "การ์ดรายละเอียดวัด" แยกอีกใบ (.church-popcard)
+   - หมุดรวมกลุ่ม (cluster) สำหรับ leaflet.markercluster
+   ชื่อ class เดิมทั้งหมดยังอยู่ สลับไฟล์ได้เลย
+   ============================================================ */
+
+/* ============================================================
    Design tokens
    ============================================================ */
 :root {
-  --ink: #f4f4f4;                    /* เดิม #101d30 — ตอนนี้เป็นพื้นผิวรอง (การ์ด) สีเทาอ่อนแทนกรมท่าเข้ม */
-  --deep: #ffffff;                   /* เดิม #0a1524 — ตอนนี้เป็นพื้นหลังหลักของหน้า (ขาว) */
-  --gold: #b6883c;                   /* ไม่เปลี่ยน — ยังใช้เป็น accent เดิม */
-  --gold-light: #e8cd8f;             /* ไม่เปลี่ยน — ยังใช้เป็น accent สว่างเดิม */
-  --parchment: #000000;              /* เดิม #f3ead9 — ตอนนี้เป็นสีตัวอักษรหลัก (เกือบดำ) */
-  --muted: rgba(16, 29, 48, 0.65);   /* เดิม rgba(243,234,217,.72) — ตัวอักษรรองบนพื้นขาว */
-  --line: rgba(182, 136, 60, 0.45);  /* ไม่เปลี่ยน — ยังเป็นเส้นกรอบสีทองจางๆ สำหรับจุด accent เช่น badge */
+  --ink: #f4f4f4;
+  --deep: #ffffff;
+  --gold: #b6883c;
+  --gold-light: #e8cd8f;
+  --parchment: #000000;
+  --muted: rgba(36, 26, 26, 0.62);
+  --line: #e8dfd2;
+
+  --ivory: #f5f0e6;
+  --navy: #241a1a;
+
+  /* พาเลตต์ Marian Red */
+  --accent: #a32636;          /* Marian red */
+  --accent-dark: #7d1a28;
+  --accent-soft: #f8e5e2;
+  --sand: #f5f0e6;            /* ทรายอุ่น */
+  --sand-deep: #e9e1d0;
+  --night: #241a1a;
+  --highlight: #f2a93b;       /* แสงเทียน */
+  --text: #241a1a;
+  --text-soft: #6a5f5c;
+  --card-line: #e8dfd2;
+  --focus-ring: #a32636;
+
+  /* Header — ดำ (สลับสีได้ที่นี่) */
+  --header-bg: #0a0a0a;
+  --header-fg: #ffffff;
+  --header-link: #f3ead9;
+
+  --radius: 14px;
+  --radius-lg: 24px;
+  --shadow-float: 0 20px 50px -12px rgba(36, 26, 26, 0.35);
+
+  --font-ui: 'Prompt', 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.home-page,
+.map-page,
+.content-page,
+.admin-login-page {
+  font-family: var(--font-ui);
+}
+
+.map-page a:focus-visible,
+.map-page button:focus-visible,
+.map-page input:focus-visible,
+.map-page select:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
  
-/* ===== White theme — HomePage ===== */
+/* ===== HomePage — พื้นทราย + น้ำเงิน ===== */
 
 .home-page {
   min-height: 100svh;
-  background: #ffffff;
-  color: #000000;
+  background: var(--sand);
+  color: var(--text);
 }
 
 /* --- Top bar --- */
@@ -33,8 +95,7 @@
   gap: 10px;
   font-size: 18px;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #000000;
+  color: var(--accent);
 }
 
 .home-logo {
@@ -48,30 +109,38 @@
 .home-btn {
   text-decoration: none;
   display: inline-block;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .home-btn:hover {
-  transform: translateY(-1px);
-  opacity: 0.85;
+  transform: translateY(-2px);
+  opacity: 1;
 }
 
 .home-btn-solid {
-  border: none;
-  background: #000000;
+  border: 2px solid var(--accent);
+  background: var(--accent);
   color: #ffffff;
 }
 
+.home-btn-solid:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
 .home-btn-outline {
-  border: 1px solid #000000;
+  border: 2px solid var(--accent);
   background: transparent;
-  color: #000000;
+  color: var(--accent);
+}
+
+.home-btn-outline:hover {
+  background: var(--accent-soft);
 }
 
 /* --- Hero --- */
@@ -79,49 +148,51 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 4vh 6vw 8vh;
+  padding: 4vh 6vw 9vh;
   text-align: center;
 }
 
 .home-hero-logo {
   display: block;
-  width: clamp(160px, 40vw, 480px);
+  width: clamp(160px, 38vw, 440px);
   height: auto;
   aspect-ratio: 1 / 1;
-  margin: 0 auto 8px;
+  margin: 0 auto 12px;
 }
 
 .home-badge {
-  padding: 6px 18px;
+  padding: 7px 18px;
   margin-bottom: 22px;
-  border: 1px solid #cbd5e1;
   border-radius: 999px;
-  color: #64748b;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-size: 13px;
+  font-weight: 600;
 }
 
 .home-hero h1 {
   margin: 0 0 20px;
-  font-size: clamp(40px, 6vw, 64px);
+  font-size: clamp(42px, 7vw, 76px);
   font-weight: 800;
-  line-height: 1.1;
-  color: #000000;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--night);
 }
 
 .home-divider {
-  width: 48px;
-  height: 3px;
-  margin-bottom: 22px;
-  background: #000000;
-  border-radius: 2px;
+  width: 56px;
+  height: 6px;
+  margin-bottom: 24px;
+  background: var(--highlight);          /* แถบสีแสงเทียน */
+  border-radius: 999px;
 }
 
 .home-subtitle {
   max-width: 540px;
   margin: 0 0 36px;
-  color: #64748b;
-  font-size: clamp(14px, 1.6vw, 16px);
-  line-height: 1.7;
+  color: var(--text-soft);
+  font-size: clamp(15px, 1.7vw, 18px);
+  line-height: 1.75;
 }
 
 .home-cta-row {
@@ -130,14 +201,14 @@
   margin-bottom: 7vh;
 }
 
-/* --- Feature grid --- */
+/* --- Feature grid — ไทล์สีน้ำเงินทึบ --- */
 .home-feature-grid {
   display: grid;
   width: 100%;
   max-width: 1100px;
   grid-template-columns: repeat(4, minmax(0, 220px));
   justify-content: center;
-  gap: clamp(14px, 2vw, 28px);
+  gap: clamp(14px, 2vw, 24px);
 }
 
 .home-feature-card {
@@ -146,45 +217,45 @@
   align-items: center;
   gap: 14px;
   padding: 32px 16px;
-  aspect-ratio: 1 / 1.15;   /* แทน min-height */
+  aspect-ratio: 1 / 1.1;
   justify-content: center;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #ffffff;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--accent);
   text-decoration: none;
-  color: inherit;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, borde...
+  color: #ffffff;
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .home-feature-card:hover {
-  transform: translateY(-4px);
-  border-color: #cbd5e1;
-  box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.18);
+  transform: translateY(-6px);
+  background: var(--accent-dark);
+  box-shadow: 0 18px 30px -14px rgba(163, 38, 54, 0.6);
 }
 
 .home-feature-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: #000000;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .home-feature-icon .menu-icon {
-  width: 46%;
-  height: 46%;
+  width: 50%;
+  height: 50%;
   stroke: #ffffff;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 2.2;
+  stroke-width: 2;
 }
 
 .home-feature-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: #000000;
+  color: #ffffff;
 }
 
 .home-feature-subtitle {
@@ -192,7 +263,7 @@
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--highlight);
 }
 
 .home-lang-btn {
@@ -202,15 +273,17 @@
 }
 
 .map-header .home-lang-btn {
-  border: 1px solid #e8cd8f;
-  background: #ffffff;
-  color: #16151a;
+  padding: 8px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #ffffff;
 }
 
 .map-header .home-lang-btn:hover {
-  background: #e8cd8f;
-  color: #16151a;
+  background: #ffffff;
+  color: var(--night);
   opacity: 1;
+  transform: none;
 }
 
 /* --- Responsive --- */
@@ -226,19 +299,19 @@
 .content-page {
   min-height: 100svh;
   padding: 8vh 8vw;
-  background: radial-gradient(circle at 50% 15%, #25364d, var(--deep) 60%);
+  background: var(--sand);
 }
  
 .content-back {
-  color: var(--gold-light);
+  color: var(--accent);
   text-decoration: none;
 }
  
 .content-page h1 {
   margin: 24px 0 12px;
-  color: var(--parchment);
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(48px, 8vw, 86px);
+  color: var(--night);
+  font-weight: 800;
+  font-size: clamp(44px, 7vw, 80px);
 }
  
 .content-page > p:last-child {
@@ -247,24 +320,24 @@
 }
  
 /* ============================================================
-   Map page — header, layout, sidebar, list, detail
+   Map page — แผนที่เต็มจอ + แผงค้นหาแบบการ์ดลอย
    ============================================================ */
 .map-page {
   min-height: 100svh;
-  background: var(--ivory);
-  color: var(--navy);
+  background: var(--sand);
+  color: var(--text);
 }
  
 .map-header {
   position: relative;
   z-index: 1000;
   display: flex;
-  height: 72px;
+  height: 64px;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: #0a0a0a;   /* เดิม var(--ink) — เปลี่ยนเป็นดำตรงๆ */
-  color: #ffffff;         /* เดิม var(--parchment) — ต้องเปลี่ยนด้วย! */
+  background: var(--header-bg);
+  color: var(--header-fg);
 }
  
 .map-brand {
@@ -275,79 +348,99 @@
 }
  
 .map-brand span {
-  color: var(--gold-light);
+  color: var(--header-fg);
+  font-weight: 700;
 }
  
 .map-home-link {
-  color: var(--gold-light);
+  color: var(--header-link);
   font-size: 14px;
+  font-weight: 500;
   text-decoration: none;
+}
+
+.map-home-link:hover {
+  color: var(--highlight);
 }
  
 .map-layout {
-  display: flex;
-  height: calc(100svh - 58px);
+  position: relative;
+  display: block;                     /* เดิม flex — ตอนนี้แผนที่เต็มพื้นที่ แผงลอยทับ */
+  height: calc(100svh - 64px);
+  overflow: hidden;
 }
  
 .map-sidebar {
-  width: 360px;
-  flex: none;
+  position: absolute;
+  z-index: 5;
+  top: 16px;
+  bottom: 16px;
+  left: 16px;
+  width: 384px;
   overflow-y: auto;
-  padding: 26px 18px 20px;
-  background: #fffdf8;
-  border-right: 1px solid #e8e0d1;
+  padding: 28px 20px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-float);
 }
  
 .map-sidebar h1 {
   margin: 0;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 27px;
-  font-weight: 600;
-  line-height: 1.12;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
 }
 
 .map-sidebar-heading {
-  margin-bottom: 24px;
-  padding: 0 5px 18px;
-  border-bottom: 1px solid #e8e0d1;
+  margin-bottom: 22px;
+  padding: 0 4px 18px;
+  border-bottom: 2px solid var(--accent-soft);
 }
 
 .map-sidebar-eyebrow {
-  margin: 0 0 7px;
-  color: #8b6c39;
-  font-size: 10px;
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .map-control-section {
-  margin-bottom: 21px;
+  margin-bottom: 22px;
 }
 
 .map-control-heading {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin: 0 2px 11px;
+  gap: 10px;
+  margin: 0 2px 12px;
 }
 
 .map-control-heading h2 {
   margin: 0;
-  color: #26334a;
-  font-size: 14px;
+  color: var(--night);
+  font-size: 15px;
   font-weight: 700;
 }
 
 .map-control-index {
   display: grid;
-  width: 23px;
-  height: 23px;
+  width: 24px;
+  height: 24px;
   flex: none;
   place-items: center;
-  border-radius: 6px;
-  background: #f2e8d8;
-  color: #8b6c39;
-  font-size: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -358,54 +451,54 @@
 .map-sidebar .map-search-wrap > svg {
   position: absolute;
   top: 50%;
-  left: 13px;
-  width: 18px;
-  height: 18px;
+  left: 16px;
+  width: 20px;
+  height: 20px;
   transform: translateY(-50%);
   fill: none;
-  stroke: #788092;
+  stroke: var(--accent);
   stroke-linecap: round;
-  stroke-width: 1.8;
+  stroke-width: 2;
   pointer-events: none;
 }
 
 .map-sidebar input.map-search-input {
-  height: 44px;
+  height: 52px;
   margin: 0;
-  padding: 10px 38px 10px 40px;
-  border-color: #ded7ca;
-  border-radius: 9px;
-  background: #fff;
-  box-shadow: 0 1px 2px #251b0d08;
-  font-size: 14px;
+  padding: 10px 42px 10px 46px;
+  border: 2px solid var(--card-line);
+  border-radius: 999px;               /* ช่องค้นหาทรงแคปซูล */
+  background: #ffffff;
+  box-shadow: none;
+  font-size: 16px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .map-sidebar input.map-search-input:focus {
-  border-color: #9e6a46;
-  box-shadow: 0 0 0 3px #9e6a4620;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(163, 38, 54, 0.14);
 }
 
 .map-search-clear {
   position: absolute;
   top: 50%;
-  right: 8px;
+  right: 10px;
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   place-items: center;
   transform: translateY(-50%);
   border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #697182;
-  font-size: 21px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 20px;
   cursor: pointer;
 }
 
 .map-search-clear:hover {
-  background: #f2eee7;
-  color: #6b2737;
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .map-sidebar-results {
@@ -414,38 +507,52 @@
   gap: 8px;
   margin-top: 18px;
   padding: 12px 4px 0;
-  border-top: 1px solid #e8e0d1;
-  color: #667080;
-  font-size: 12px;
+  border-top: 2px solid var(--accent-soft);
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .map-sidebar-results-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #448260;
+  background: var(--highlight);
 }
  
 .map-sidebar input {
   width: 100%;
   margin-bottom: 14px;
-  padding: 11px 13px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  padding: 11px 14px;
+  border: 2px solid var(--card-line);
+  border-radius: var(--radius);
   outline: none;
-  background: var(--ivory);
+  background: #ffffff;
 }
  
 .map-wrap {
-  position: relative;
-  flex: 1;
+  position: absolute;                 /* เดิม flex:1 — ตอนนี้เต็มพื้นที่ทั้งหมด */
+  inset: 0;
   min-width: 0;
+  isolation: isolate;
 }
 
 .map-container {
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+/* ย้ายปุ่มซูมของ Leaflet ไปมุมขวาล่าง ให้พ้นการ์ดลอยทั้งสองใบ */
+.map-wrap .leaflet-top.leaflet-left {
+  top: auto;
+  bottom: 28px;
+  left: auto;
+  right: 16px;
+}
+
+.map-wrap .leaflet-top.leaflet-left .leaflet-control {
+  margin: 0;
 }
 
 .locate-button {
@@ -455,20 +562,23 @@
   right: 16px;
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 12px;
-  border: 1px solid #d7dbe3;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #1c2b4a;
-  box-shadow: 0 2px 8px #0002;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 10px 24px -8px rgba(163, 38, 54, 0.7);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
+  transition: background 0.15s, transform 0.15s;
 }
 
 .locate-button:hover:not(:disabled) {
-  background: #f2f6ff;
+  background: var(--accent-dark);
+  transform: translateY(-1px);
 }
 
 .locate-button:disabled {
@@ -477,7 +587,7 @@
 }
 
 .locate-button span {
-  color: #2563eb;
+  color: var(--highlight);
   font-size: 19px;
   line-height: 1;
 }
@@ -485,15 +595,16 @@
 .location-error {
   position: absolute;
   z-index: 500;
-  top: 58px;
+  top: 76px;
   right: 16px;
-  max-width: 250px;
+  max-width: 260px;
   margin: 0;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: #fff4f1;
-  color: #9c3328;
-  font-size: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: #fff1ee;
+  color: #a1301f;
+  font-size: 13px;
+  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.25);
 }
  
 .map {
@@ -505,30 +616,41 @@
 .church-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
 }
  
 .church-card {
   display: flex;
-  gap: 12px;
-  padding: 13px 10px;
-  border-radius: 10px;
-  color: var(--navy);
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 12px 14px;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  background: var(--sand);
+  color: var(--text);
   text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
  
 .church-card:hover {
-  background: #efe8d6;
+  background: var(--accent-soft);
+  transform: translateX(3px);
+}
+
+.church-card.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
  
 .card-pin {
   display: grid;
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   place-items: center;
-  border-radius: 8px;
-  background: var(--brick, #7a3b2e);
+  border-radius: 12px;
+  background: var(--accent);
   color: white;
 }
  
@@ -542,29 +664,31 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 16px;
+  font-weight: 700;
 }
  
 .card-body small {
-  color: #5c6470;
-  font-size: 12px;
+  color: var(--text-soft);
+  font-size: 13px;
 }
  
 .no-results {
-  padding: 24px 12px;
-  color: #5c6470;
+  padding: 32px 12px;
+  color: var(--text-soft);
   text-align: center;
 }
  
 .detail {
-  padding: 2px 6px 20px;
+  padding: 2px 4px 22px;
 }
 
 .church-detail-image {
   display: block;
   width: 100%;
-  height: 240px;
-  margin-bottom: 16px;
-  border-radius: 10px;
+  height: 220px;
+  margin-bottom: 18px;
+  border-radius: 20px;
   object-fit: cover;
   object-position: center;
 }
@@ -574,13 +698,13 @@
   width: 100%;
   padding: 0;
   border: 0;
-  border-radius: 10px;
+  border-radius: 20px;
   background: transparent;
   cursor: zoom-in;
 }
 
 .church-detail-image-trigger:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -592,14 +716,14 @@
   align-items: center;
   justify-content: center;
   padding: 5vh 5vw;
-  background: rgba(0, 0, 0, 0.88);
+  background: rgba(20, 12, 12, 0.92);
   cursor: zoom-out;
 }
 
 .church-image-lightbox > img {
   max-width: 100%;
   max-height: 90vh;
-  border-radius: 6px;
+  border-radius: 16px;
   object-fit: contain;
   cursor: default;
 }
@@ -610,12 +734,12 @@
   right: 20px;
   width: 44px;
   height: 44px;
-  border: 1px solid #ffffff80;
+  border: 0;
   border-radius: 50%;
-  background: #111111b3;
-  color: #ffffff;
+  background: #ffffff;
+  color: var(--night);
   cursor: pointer;
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1;
 }
 
@@ -623,69 +747,93 @@
   width: 64px;
   height: 48px;
   flex: none;
-  border-radius: 5px;
-  background: #eee8da;
+  border-radius: 10px;
+  background: var(--sand-deep);
   object-fit: cover;
 }
  
 .back-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
   margin-bottom: 10px;
-  color: #7a3b2e;
-  font-size: 13px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
   text-decoration: none;
+}
+
+.back-btn:hover {
+  background: var(--accent);
+  color: #ffffff;
 }
  
 .detail h2 {
   margin: 0;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 30px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
  
 .detail-en {
-  margin: 2px 0 6px;
-  color: #5c6470;
-  font-style: italic;
+  margin: 4px 0 10px;
+  color: var(--text-soft);
+  font-style: normal;
+  font-weight: 500;
 }
  
 .district {
   display: inline-block;
-  margin-bottom: 18px;
-  padding: 3px 10px;
+  margin-bottom: 20px;
+  padding: 5px 14px;
   border-radius: 999px;
-  background: #e4ce94;
-  font-size: 12px;
-  font-weight: 600;
+  background: var(--highlight);
+  color: var(--night);
+  font-size: 13px;
+  font-weight: 700;
 }
  
 .detail-block {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--sand);              /* แต่ละหัวข้อเป็นบล็อกสีทราย */
 }
  
 .detail-label {
   margin-bottom: 6px;
-  color: #b8923f;
-  font-size: 11px;
+  color: var(--accent);
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
  
 .detail-value {
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.detail-updated {
+  margin: 10px 0 0;
+  color: var(--text-soft);
+  font-size: 12px;
 }
  
 .detail table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
  
 .detail td,
 .detail th {
-  padding: 7px 0;
-  border-bottom: 1px solid #e4dcc8;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--sand-deep);
   text-align: left;
   vertical-align: top;
 }
@@ -693,36 +841,45 @@
 .detail th {
   width: 42%;
   padding-right: 8px;
+  font-weight: 700;
 }
  
 .detail td {
-  color: #5c6470;
+  color: var(--text-soft);
 }
  
 .nav-btn {
   display: flex;
   justify-content: center;
-  margin-top: 8px;
-  padding: 12px;
-  border-radius: 8px;
-  background: var(--ink);
-  color: var(--parchment);
-  font-weight: 600;
+  margin-top: 14px;
+  padding: 15px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
   text-decoration: none;
+  box-shadow: 0 10px 24px -10px rgba(163, 38, 54, 0.8);
+  transition: background 0.15s, transform 0.15s;
+}
+
+.nav-btn:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
 }
 
 .live-mass-filter {
   display: flex;
   width: 100%;
   align-items: center;
-  gap: 8px;
-  margin: 0 0 21px;
-  padding: 12px;
-  border: 1px solid #e5d8c9;
-  border-radius: 9px;
-  background: #f8f4ed;
-  color: #3d485b;
-  font-size: 13px;
+  gap: 10px;
+  margin: 0 0 22px;
+  padding: 14px 16px;
+  border: 2px solid var(--card-line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   text-align: left;
@@ -730,49 +887,100 @@
 }
 
 .live-mass-filter:hover {
-  border-color: #cba89a;
+  border-color: var(--highlight);
 }
 
 .live-mass-filter.is-active {
-  border-color: #b13d32;
-  background: #f8e8e3;
-  color: #7a3b2e;
+  border-color: var(--highlight);
+  background: #fff6e5;
+  color: #7a4a00;
 }
 
 .live-mass-dot {
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
   flex: none;
   border-radius: 50%;
-  background: #b13d32;
+  background: var(--highlight);
+  box-shadow: 0 0 0 4px rgba(242, 169, 59, 0.3);   /* เปล่งแสงเหมือนเปลวเทียน */
 }
  
-/* ---- Responsive: hero / map layout ---- */
+/* ---- Responsive ---- */
 @media (max-width: 1150px) {
   .menu-windows {
     max-width: 640px;
     grid-template-columns: repeat(2, minmax(0, 300px));
     row-gap: clamp(16px, 4vw, 30px);
   }
+
+  .map-sidebar {
+    width: 340px;
+  }
+
 }
  
+/* ============================================================
+   Mobile — การ์ดลอยกลายเป็น Bottom Sheet
+   ============================================================ */
 @media (max-width: 700px) {
   .map-layout {
-    display: block;
-    height: auto;
-  }
- 
-  .map-wrap {
-    height: 52svh;
+    height: calc(100svh - 64px);
   }
  
   .map-sidebar {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
     width: 100%;
-    max-height: none;
+    max-height: 48svh;
+    border: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transition: max-height 0.25s ease;
+  }
+
+  .map-sidebar.is-collapsed {
+    max-height: 140px;
+    overflow: hidden;
+  }
+
+  .map-sidebar.is-expanded {
+    max-height: 86svh;
+  }
+
+  .map-wrap .leaflet-top.leaflet-left {
+    top: 76px;
+    bottom: auto;
+    right: 12px;
+  }
+
+  .map-sheet-handle {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin: -14px 0 8px;
+    padding: 12px 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .map-sheet-handle::before {
+    width: 48px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--card-line);
+    content: '';
   }
  
   .map-header {
     padding: 0 16px;
+  }
+}
+
+@media (min-width: 701px) {
+  .map-sheet-handle {
+    display: none;
   }
 }
  
@@ -803,37 +1011,44 @@
 @media (prefers-reduced-motion: reduce) {
   .window-frame,
   .menu-icon,
-  .window-finial {
+  .window-finial,
+  .map-sidebar,
+  .church-card,
+  .region-chip,
+  .home-feature-card,
+  .home-btn,
+  .nav-btn,
+  .locate-button {
     transition: none;
   }
 }
  
 /* ---- Map sidebar text-color overrides ---- */
 .map-sidebar {
-  color: #1c2b4a;
+  color: var(--text);
 }
  
 .map-sidebar h1 {
-  color: #1c2b4a;
+  color: var(--night);
 }
  
 .map-sidebar input {
-  color: #1c2b4a;
+  color: var(--text);
 }
  
 .map-sidebar input::placeholder {
-  color: #5c6470;
+  color: #9a8f8a;
 }
  
 .church-card {
-  color: #1c2b4a;
+  color: var(--text);
 }
  
 .card-body strong {
-  color: #1c2b4a;
+  color: var(--night);
 }
  
-/* ---- Church markers ---- */
+/* ---- Church markers: หมุดน้ำเงิน + กางเขนสีขาว ---- */
 .church-marker-icon {
   border: 0;
   background: transparent;
@@ -844,24 +1059,59 @@
   top: 0;
   left: 4px;
   display: block;
-  width: 26px;
-  height: 26px;
-  border: 4px solid white;
+  width: 28px;
+  height: 28px;
+  border: 3px solid white;
   border-radius: 50% 50% 50% 0;
-  background: #b13d32;
-  box-shadow: 0 2px 6px #0008;
+  background: var(--accent);
+  box-shadow: 0 4px 10px rgba(36, 26, 26, 0.45);
   transform: rotate(-45deg);
 }
  
 .church-marker-pin::after {
   position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: white;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  /* วาดกางเขนด้วย gradient สองเส้น แล้วหมุนกลับให้ตั้งตรง */
+  background:
+    linear-gradient(white, white) center / 3px 100% no-repeat,
+    linear-gradient(white, white) center 35% / 100% 3px no-repeat;
+  transform: translate(-50%, -50%) rotate(45deg);
   content: '';
+}
+
+/* ---- Marker clustering (leaflet.markercluster) ---- */
+.marker-cluster.marker-cluster-small,
+.marker-cluster.marker-cluster-medium,
+.marker-cluster.marker-cluster-large {
+  background: rgba(163, 38, 54, 0.25);
+}
+
+.marker-cluster.marker-cluster-small div,
+.marker-cluster.marker-cluster-medium div,
+.marker-cluster.marker-cluster-large div {
+  background: var(--accent);
+  color: #ffffff;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(36, 26, 26, 0.4);
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.marker-cluster div span {
+  line-height: 24px;
+}
+
+.marker-cluster.marker-cluster-medium div {
+  background: var(--accent-dark);
+}
+
+.marker-cluster.marker-cluster-large div {
+  background: var(--night);
 }
  
 /* ---- Map header actions / admin link ---- */
@@ -872,13 +1122,14 @@
 }
  
 .map-admin-link {
-  color: var(--gold-light);
+  color: var(--header-link);
   font-size: 14px;
+  font-weight: 500;
   text-decoration: none;
 }
  
 .map-admin-link:hover {
-  color: white;
+  color: var(--highlight);
 }
  
 /* ---- Sidebar add/remove actions ---- */
@@ -894,47 +1145,42 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 42px;
+  min-height: 46px;
   padding: 10px 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 2px solid var(--card-line);
+  border-radius: 999px;
   background: transparent;
-  color: var(--ink);
-  font-size: 13px;
+  color: var(--text);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.25s, border-color 0.25s, color 0.25s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
  
 .sidebar-action-btn span {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1;
 }
  
 .sidebar-action-add {
-  border-color: var(--gold);
-  color: #7a5a1e;
+  border-color: var(--accent);
+  color: var(--accent);
 }
  
 .sidebar-action-add:hover {
-  background: var(--gold);
+  background: var(--accent);
   color: white;
-}
-
-.sidebar-action-remove:hover {
-  border-color: #b13d32;
-  background: #f8e8e3;
-  color: #7a3b2e;
 }
  
 .sidebar-action-remove {
-  border-color: rgba(122, 59, 46, 0.4);
-  color: #7a3b2e;
+  border-color: #e9c3bd;
+  color: #a1301f;
 }
  
 .sidebar-action-remove:hover {
-  background: #7a3b2e;
+  border-color: #a1301f;
+  background: #a1301f;
   color: white;
 }
  
@@ -946,101 +1192,111 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0b1a2b;
+  background: var(--night);
   padding: 24px;
 }
  
 .admin-login-form {
   width: 100%;
-  max-width: 360px;
-  background: #10243a;
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  border-radius: 12px;
-  padding: 32px 28px;
+  max-width: 380px;
+  background: #ffffff;
+  border: 0;
+  border-radius: var(--radius-lg);
+  padding: 36px 30px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-float);
 }
  
 .admin-login-form h1 {
-  color: #f4f0e6;
-  font-size: 1.3rem;
+  color: var(--night);
+  font-size: 1.5rem;
+  font-weight: 800;
   margin: 0 0 8px;
   text-align: center;
 }
  
 .admin-login-form label {
-  color: #d4af37;
+  color: var(--accent);
   font-size: 0.85rem;
+  font-weight: 700;
   margin-bottom: -8px;
 }
  
 .admin-login-form input {
-  background: #0b1a2b;
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 8px;
-  padding: 10px 12px;
-  color: #f4f0e6;
+  background: var(--sand);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  color: var(--night);
   font-size: 1rem;
   outline: none;
 }
  
 .admin-login-form input:focus {
-  border-color: #d4af37;
+  border-color: var(--accent);
+  background: #ffffff;
 }
  
 .admin-login-form button[type='submit'] {
   margin-top: 10px;
-  background: #d4af37;
-  color: #0b1a2b;
+  background: var(--accent);
+  color: #ffffff;
   border: none;
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 999px;
+  padding: 14px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: background 0.2s;
 }
  
 .admin-login-form button[type='submit']:hover {
-  opacity: 0.9;
+  opacity: 1;
+  background: var(--accent-dark);
 }
  
 .admin-login-error {
-  color: #ff6b6b;
+  color: #c0392b;
   font-size: 0.85rem;
   margin: 0;
   text-align: center;
 }
  
-/* ---- Church marker: open-now state ---- */
+/* ---- Church marker: open-now state (แสงเทียน) ---- */
 .church-marker-icon.is-open .church-marker-pin {
-  background: #2e7d32;
-  border-color: #1b5e20;
+  background: var(--highlight);
+  border-color: #ffffff;
+}
+
+.church-marker-icon.is-open .church-marker-pin::after {
+  background:
+    linear-gradient(var(--night), var(--night)) center / 3px 100% no-repeat,
+    linear-gradient(var(--night), var(--night)) center 35% / 100% 3px no-repeat;
 }
  
 .church-marker-badge {
   position: absolute;
-  top: -10px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  background: #2e7d32;
-  color: white;
+  background: var(--night);
+  color: var(--highlight);
   font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 4px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
   white-space: nowrap;
 }
  
 .church-open-badge {
-  background: #2e7d32;
-  color: white;
+  background: var(--highlight);
+  color: var(--night);
   font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 6px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
   align-self: center;
 }
  
@@ -1064,21 +1320,21 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(10, 21, 36, 0.62);
-  backdrop-filter: blur(2px);
+  background: rgba(36, 26, 26, 0.6);
+  backdrop-filter: blur(4px);
 }
  
 .modal-box {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   max-height: 88vh;
   overflow-y: auto;
-  padding: 26px 24px 24px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fffdf8;
-  color: #1c2b4a;
-  box-shadow: 0 20px 60px -12px rgba(10, 21, 36, 0.5);
+  padding: 28px 26px 26px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  color: var(--text);
+  box-shadow: var(--shadow-float);
 }
  
 .modal-header {
@@ -1086,28 +1342,28 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   padding-bottom: 14px;
-  border-bottom: 1px solid #e4dcc8;
+  border-bottom: 2px solid var(--accent-soft);
 }
  
 .modal-header h2 {
   margin: 0;
-  font-family: 'Cormorant Garamond', serif;
   font-size: 24px;
-  color: #1c2b4a;
+  font-weight: 800;
+  color: var(--night);
 }
  
 .modal-close {
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   border: none;
   border-radius: 50%;
-  background: transparent;
-  color: #5c6470;
+  background: var(--sand);
+  color: var(--text-soft);
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
@@ -1115,56 +1371,56 @@
 }
  
 .modal-close:hover {
-  background: #efe8d6;
-  color: #1c2b4a;
+  background: var(--accent);
+  color: #ffffff;
 }
  
 .modal-hint {
   margin: -4px 0 14px;
-  color: #5c6470;
+  color: var(--text-soft);
   font-size: 13px;
-  font-style: italic;
-  line-height: 1.5;
+  line-height: 1.55;
 }
  
 .church-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
  
 .church-form label {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  color: #7a5a1e;
+  color: var(--accent);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
  
 .church-form input,
 .church-form select,
 .church-form textarea {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 12px;
-  background: #f8f3e7;
-  color: #1c2b4a;
-  font-size: 14px;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  background: var(--sand);
+  color: var(--text);
+  font-size: 15px;
   font-weight: 400;
   font-family: inherit;
   text-transform: none;
   letter-spacing: normal;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
  
 .church-form input:focus,
 .church-form select:focus,
 .church-form textarea:focus {
-  border-color: var(--gold);
+  border-color: var(--accent);
+  background: #ffffff;
 }
  
 .church-form textarea {
@@ -1183,32 +1439,33 @@
  
 .modal-primary-btn {
   margin-top: 4px;
-  padding: 12px;
+  padding: 14px;
   border: none;
-  border-radius: 8px;
-  background: var(--ink);
-  color: var(--parchment);
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: background 0.2s;
 }
  
 .modal-primary-btn:hover {
-  opacity: 0.9;
+  opacity: 1;
+  background: var(--accent-dark);
 }
  
 .modal-primary-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
  
 .modal-success {
   margin: 4px 0 20px;
-  padding: 14px;
-  border-radius: 8px;
-  background: #eaf3ea;
-  color: #2e7d32;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: #eaf5ec;
+  color: #1f6b29;
   font-size: 14px;
   line-height: 1.6;
   text-align: center;
@@ -1216,15 +1473,14 @@
  
 .modal-error {
   margin: -4px 0 4px;
-  color: #b13d32;
+  color: #c0392b;
   font-size: 13px;
 }
  
 .sidebar-hint {
   margin: -6px 0 16px;
-  color: #5c6470;
+  color: var(--text-soft);
   font-size: 12px;
-  font-style: italic;
   line-height: 1.5;
 }
  
@@ -1236,11 +1492,11 @@
 }
  
 .map-user-avatar {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background-color: #d9d9d9;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background-color: var(--accent-soft);
+  border: 2px solid var(--highlight);
   cursor: pointer;
 }
  
@@ -1249,9 +1505,9 @@
   top: 100%;
   right: 0;
   background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  min-width: 160px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-float);
+  min-width: 170px;
   overflow: hidden;
   z-index: 1001;
   opacity: 0;
@@ -1261,7 +1517,8 @@
   padding-top: 8px; /* เผื่อช่องว่างกันเมาส์หลุดจาก avatar ไป dropdown */
 }
  
-.map-user-menu:hover .map-user-dropdown {
+.map-user-menu:hover .map-user-dropdown,
+.map-user-menu:focus-within .map-user-dropdown {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
@@ -1270,25 +1527,26 @@
 .map-user-dropdown-item {
   display: block;
   width: 100%;
-  padding: 10px 16px;
+  padding: 12px 18px;
   text-align: left;
   background: none;
   border: none;
   font-size: 14px;
-  color: #1a1a1a;
+  font-weight: 500;
+  color: var(--text);
   cursor: pointer;
   text-decoration: none;
 }
  
 .map-user-dropdown-item:hover {
-  background-color: #f2f2f2;
+  background-color: var(--accent-soft);
 }
  
 /* ---- Misc field / button helpers ---- */
 .field-hint {
   display: block;
   margin-top: 4px;
-  color: #5c6470;
+  color: var(--text-soft);
   font-size: 11px;
   font-weight: 400;
   text-transform: none;
@@ -1301,24 +1559,24 @@
   justify-content: center;
   gap: 6px;
   margin: 4px 0 10px;
-  padding: 10px;
-  border: 1px solid var(--gold);
-  border-radius: 8px;
+  padding: 12px;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
   background: transparent;
-  color: #7a5a1e;
-  font-size: 13px;
+  color: var(--accent);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
  
 .edit-detail-btn:hover {
-  background: var(--gold);
+  background: var(--accent);
   color: white;
 }
  
 .map-logo {
-  height: 64px;
+  height: 48px;
   width: auto;
 }
  
@@ -1336,8 +1594,8 @@
 /* สไตล์หน้าบทเทศน์ */
 .content-page {
   min-height: 100svh;
-  background: #ffffff;
-  color: #000000;
+  background: var(--sand);
+  color: var(--text);
 }
 
 .content-page .home-topbar {
@@ -1352,57 +1610,72 @@
 
 .content-back {
   display: inline-block;
-  color: #000000;
-  text-decoration: none;
   margin-bottom: 24px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.content-back:hover {
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .eyebrow {
-  margin: 0 0 8px;
-  color: #64748b;
-  font-size: 14px;
+  margin: 0 0 10px;
+  color: var(--accent);
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .content-hero h1 {
   margin: 0 0 28px;
-  color: #000000;
-  font-size: clamp(36px, 6vw, 64px);
-  line-height: 1.15;
+  color: var(--night);
+  font-size: clamp(36px, 6vw, 68px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .content-empty {
   margin: 48px 0;
-  color: #64748b;
+  color: var(--text-soft);
   text-align: center;
   line-height: 1.8;
 }
 
 .daily-reading-panel {
   margin: 28px 0 48px;
-  padding: 24px;
-  border-left: 4px solid #b6883c;
-  background: #faf7ef;
+  padding: 28px;
+  border-left: 0;
+  border-radius: var(--radius-lg);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .daily-reading-panel h2 {
   margin: 0 0 8px;
-  color: #1c2b4a;
-  font-size: 24px;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 800;
 }
 
 .daily-reading-date {
   margin: 0 0 16px;
-  color: #64748b;
+  color: var(--highlight);
   font-size: 13px;
+  font-weight: 600;
 }
 
 .daily-reading-excerpt {
   margin: 0 0 16px;
-  color: #334155;
-  line-height: 1.8;
+  color: #fbece9;
+  line-height: 1.85;
   white-space: pre-line;
   display: -webkit-box;
   overflow: hidden;
@@ -1412,10 +1685,14 @@
 
 .content-source-link,
 .external-news-footer a {
-  color: #7a3b2e;
+  color: var(--accent);
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
+}
+
+.daily-reading-panel .content-source-link {
+  color: var(--highlight);
 }
 
 .content-source-link:hover,
@@ -1424,19 +1701,26 @@
 }
 
 .content-retry {
-  padding: 9px 14px;
-  border: 1px solid #b6883c;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #5c4218;
+  padding: 10px 18px;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
   cursor: pointer;
   font: inherit;
+  font-weight: 600;
+}
+
+.content-retry:hover {
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .sermon-samples-heading {
   margin: 0 0 16px;
-  color: #1c2b4a;
-  font-size: 24px;
+  color: var(--night);
+  font-size: 26px;
+  font-weight: 800;
 }
 
 .news-page-content {
@@ -1445,16 +1729,17 @@
 
 .external-news-list {
   display: grid;
-  gap: 18px;
+  gap: 20px;
 }
 
 .external-news-item {
   display: grid;
   grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
   overflow: hidden;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border: 0;
+  border-radius: var(--radius-lg);
   background: #ffffff;
+  box-shadow: 0 10px 30px -18px rgba(36, 26, 26, 0.35);
 }
 
 .external-news-image {
@@ -1469,25 +1754,26 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: 20px;
+  padding: 22px;
 }
 
 .external-news-date {
-  color: #7a5a1e;
+  color: var(--accent);
   font-size: 12px;
   font-weight: 700;
 }
 
 .external-news-body h2 {
   margin: 8px 0 10px;
-  color: #1c2b4a;
+  color: var(--night);
   font-size: 21px;
+  font-weight: 700;
   line-height: 1.4;
 }
 
 .external-news-body > p {
   margin: 0 0 20px;
-  color: #5c6470;
+  color: var(--text-soft);
   line-height: 1.7;
 }
 
@@ -1498,8 +1784,8 @@
   gap: 12px;
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid #e2e8f0;
-  color: #64748b;
+  border-top: 2px solid var(--accent-soft);
+  color: var(--text-soft);
   font-size: 12px;
 }
 
@@ -1512,30 +1798,31 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-top: 24px;
-  color: #475569;
+  margin-top: 28px;
+  color: var(--text-soft);
   font-size: 14px;
 }
 
 .news-pagination button {
-  min-width: 96px;
-  padding: 9px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #334155;
+  min-width: 104px;
+  padding: 10px 16px;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
   cursor: pointer;
   font: inherit;
+  font-weight: 600;
 }
 
 .news-pagination button:hover:not(:disabled) {
-  border-color: #b6883c;
-  background: #faf7ef;
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .news-pagination button:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
 .sermon-list {
@@ -1546,55 +1833,60 @@
 
 .sermon-card {
   display: block;
-  padding: 24px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  padding: 26px;
+  border: 0;
+  border-radius: var(--radius-lg);
   background: #ffffff;
-  color: #000000;
+  color: var(--text);
   text-decoration: none;
+  box-shadow: 0 10px 30px -18px rgba(36, 26, 26, 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .sermon-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 18px 36px -16px rgba(163, 38, 54, 0.45);
 }
 
 .sermon-card h2 {
   margin: 0 0 10px;
   font-size: 22px;
+  font-weight: 700;
 }
 
 .sermon-card p {
   margin: 0 0 16px;
-  color: #64748b;
+  color: var(--text-soft);
   line-height: 1.7;
 }
 
 .sermon-card small {
-  color: #64748b;
+  color: var(--text-soft);
 }
 
 .sermon-scripture {
   margin: 24px 0;
-  padding: 16px 20px;
-  border-left: 4px solid #b6883c;
-  background: #faf7ef;
-  color: #5c6470;
+  padding: 20px 24px;
+  border-left: 6px solid var(--highlight);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: #ffffff;
+  color: var(--accent-dark);
+  font-family: 'Cormorant Garamond', serif;   /* ใช้ serif เฉพาะบทอ่าน ให้รู้สึกเป็นพระคัมภีร์ */
+  font-size: 21px;
   font-style: italic;
   line-height: 1.7;
 }
 
 .sermon-content {
-  max-width: 760px;
+  max-width: 740px;
   margin-top: 32px;
-  color: #1f2937;
-  font-size: 16px;
-  line-height: 1.9;
+  color: #2a2020;
+  font-size: 17px;
+  line-height: 1.95;
 }
 
 .sermon-content p {
-  margin: 0 0 20px;
+  margin: 0 0 22px;
 }
 
 .sermon-media {
@@ -1606,6 +1898,7 @@
 .sermon-media h2 {
   margin-bottom: 12px;
   font-size: 20px;
+  font-weight: 700;
 }
 
 .sermon-media audio {
@@ -1616,7 +1909,7 @@
   width: 100%;
   min-height: 420px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 @media (max-width: 600px) {
@@ -1633,7 +1926,7 @@
   }
 
   .daily-reading-panel {
-    padding: 18px;
+    padding: 20px;
   }
 
   .external-news-item {
@@ -1666,26 +1959,27 @@
 
 .sermon-date,
 .sermon-detail-meta {
-  color: #64748b;
+  color: var(--text-soft);
   font-size: 14px;
 }
 
 .sermon-tag {
-  padding: 5px 10px;
+  padding: 5px 12px;
   border-radius: 999px;
-  background: #faf7ef;
-  color: #9a702e;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-size: 12px;
+  font-weight: 700;
 }
 
 .sermon-card-footer {
   margin-top: 20px;
-  color: #64748b;
+  color: var(--text-soft);
   font-size: 14px;
 }
 
 .sermon-card-footer strong {
-  color: #9a702e;
+  color: var(--accent);
 }
 
 .sermon-detail {
@@ -1712,58 +2006,195 @@
 
 /* App.css */
 .region-filter {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;                      /* เดิม grid 2 คอลัมน์ — เปลี่ยนเป็นชิปแคปซูลไหลต่อกัน */
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .region-chip {
-  min-height: 39px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #ded7ca;
+  min-height: 42px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--card-line);
   background: #fff;
-  color: #4c5668;
-  font-size: 13px;
-  font-weight: 500;
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
 .region-chip:hover {
-  border-color: #ad8d6b;
-  background: #fbf8f2;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .region-chip-all {
-  grid-column: 1 / -1;
+  flex-basis: auto;
 }
 
 .region-chip.is-active {
-  border-color: #6b2737;
-  background: #6b2737;
+  border-color: var(--accent);
+  background: var(--accent);
   color: #fff;
-  box-shadow: 0 2px 5px #6b273726;
+  box-shadow: none;
 }
 
 .region-chip.is-active:hover {
-  border-color: #57202e;
-  background: #57202e;
+  border-color: var(--accent-dark);
+  background: var(--accent-dark);
+  color: #fff;
+}
+
+.region-chip-count {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(163, 38, 54, 0.12);
+  font-size: 12px;
+}
+
+.region-chip.is-active .region-chip-count {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.filter-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filter-clear-btn:hover {
+  background: var(--accent-soft);
 }
 
 @media (max-width: 700px) {
   .map-sidebar {
-    padding: 19px 16px;
-    border-right: 0;
-    border-bottom: 1px solid #e8e0d1;
+    padding: 20px 16px;
   }
 
   .map-sidebar-heading {
-    margin-bottom: 17px;
+    margin-bottom: 16px;
     padding-bottom: 14px;
   }
 
   .map-control-section {
     margin-bottom: 16px;
+  }
+}
+
+
+/* ============================================================
+   หมุดที่ถูกเลือก + การ์ดรายละเอียดวัด (แยกจากการ์ด filter)
+   ใช้ <aside class="church-popcard"> วางเป็นพี่น้องกับ .map-sidebar
+   ภายใน .map-layout (ซึ่งเป็น position: relative อยู่แล้ว)
+   ============================================================ */
+.church-marker-icon.is-selected .church-marker-pin {
+  box-shadow: 0 0 0 5px rgba(242, 169, 59, 0.55), 0 4px 10px rgba(36, 26, 26, 0.45);
+}
+
+.church-popcard {
+  position: absolute;
+  z-index: 6;
+  top: 16px;
+  left: 416px;                       /* 16 + กว้างของ sidebar 384 + ช่องว่าง 16 */
+  width: 360px;
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  padding: 18px 18px 22px;
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: var(--shadow-float);
+  animation: church-popcard-in 0.22s ease;
+}
+
+.church-popcard .detail {
+  padding: 0;
+}
+
+.church-popcard .church-detail-image {
+  height: 180px;
+  margin-bottom: 14px;
+}
+
+.church-popcard-close {
+  position: absolute;
+  z-index: 1;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sand);
+  color: var(--text-soft);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.church-popcard-close:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+@keyframes church-popcard-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 1150px) {
+  .church-popcard {
+    left: 372px;                     /* 16 + 340 + 16 */
+    width: 320px;
+  }
+}
+
+@media (max-width: 700px) {
+  .church-popcard {
+    z-index: 7;                      /* ทับ bottom sheet */
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+    max-height: 62svh;
+    animation-name: church-popcard-up;
+  }
+
+  @keyframes church-popcard-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .church-popcard {
+    animation: none;
   }
 }
