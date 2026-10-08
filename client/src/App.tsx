@@ -984,7 +984,10 @@ export function MapPage() {
         </aside>
         {/* ⬅️ แก้ตรงนี้ (การ์ดแยก): การ์ดรายละเอียดวัดเป็นอีกใบ แยกออกมาจากการ์ด filter (เดิมอยู่ใน <aside> เดียวกัน) */}
         {selectedChurch && (
-          <aside className="church-popcard" aria-label={lang === 'th' ? 'รายละเอียดวัด' : 'Church details'}>
+          <aside
+            className={`church-popcard${panelHidden ? ' is-panel-hidden' : ''}`}   // ⬅️ แก้ตรงนี้ (การ์ดเลื่อนลงใต้ปุ่ม): เพิ่ม class ตอนแผง filter ถูกซ่อน
+            aria-label={lang === 'th' ? 'รายละเอียดวัด' : 'Church details'}
+          >
             <button
               type="button"
               className="church-popcard-close"

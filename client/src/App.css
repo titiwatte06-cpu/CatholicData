@@ -2267,3 +2267,15 @@
     display: none;
   }
 }
+
+@media (min-width: 701px) {
+  .church-popcard {
+    transition: left 0.25s ease, top 0.25s ease, max-height 0.25s ease;
+  }
+
+  .church-popcard.is-panel-hidden {
+    left: 14px;                           /* ชิดซ้ายเท่ากับปุ่ม "สำรวจแผนที่" */
+    top: 78px;                            /* ต่ำกว่าขอบล่างของปุ่ม + เว้นช่องว่างเล็กน้อย */
+    max-height: calc(100% - 78px - 16px); /* กันการ์ดทะลุขอบล่างของแผนที่ */
+  }
+}
