@@ -2198,3 +2198,72 @@
     animation: none;
   }
 }
+
+/* ===== ซ่อน/แสดงการ์ดค้นหาทั้งแผ่น (จอ >700px) ===== */
+.map-sidebar-heading {
+  position: relative;
+}
+
+/* ปุ่มซ่อน: วางมุมขวาบนของการ์ด แถวเดียวกับป้าย "สำรวจแผนที่" ไม่ทับชื่อหัวข้อ */
+.map-panel-hide-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  background: #fff;
+  color: #4a2a2f;
+  cursor: pointer;
+}
+
+.map-panel-hide-btn:hover {
+  background: #fdf6f0;
+}
+
+/* ปุ่มเรียกการ์ดกลับมา: ลอยมุมซ้ายบนของแผนที่ */
+.map-panel-reveal {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  color: #1f1f1f;
+  font: inherit;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+
+.map-panel-reveal svg {
+  color: #a52a3a;
+}
+
+.map-panel-reveal:hover {
+  background: #fdf6f0;
+}
+
+/* ซ่อนการ์ดทั้งแผ่น (เฉพาะเดสก์ท็อป/แท็บเล็ต) */
+@media (min-width: 701px) {
+  .map-sidebar.is-panel-hidden {
+    display: none;
+  }
+}
+
+/* มือถือใช้ปุ่มจับ (bottom sheet) เดิม ไม่ต้องมีปุ่มซ่อน/ปุ่มเรียกกลับชุดนี้ */
+@media (max-width: 700px) {
+  .map-panel-hide-btn,
+  .map-panel-reveal {
+    display: none;
+  }
+}

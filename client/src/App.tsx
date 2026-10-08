@@ -195,7 +195,8 @@ function getFocusPadding(): { topLeft: [number, number]; bottomRight: [number, n
 }
 
 // ⬅️ แก้ตรงนี้ (การ์ดแยก): เพิ่ม prop selected เพื่อให้แผนที่รู้ว่าวัดไหนถูกเลือกอยู่
-function MapView({ onSelect, now, churches, selected }: { onSelect: (id: string) => void; now: Date; churches: Church[]; selected?: Church }) {
+// ⬅️ แก้ตรงนี้ (ซ่อนการ์ด): เพิ่ม prop children เพื่อให้วางปุ่ม "เรียกการ์ดกลับมา" ลอยบนแผนที่ได้
+function MapView({ onSelect, now, churches, selected, children }: { onSelect: (id: string) => void; now: Date; churches: Church[]; selected?: Church; children?: ReactNode }) {
   const mapElement = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   // ⬅️ แก้ตรงนี้ (cluster): เปลี่ยนจาก L.LayerGroup เป็น MarkerClusterGroup
@@ -339,6 +340,8 @@ function MapView({ onSelect, now, churches, selected }: { onSelect: (id: string)
         {locating ? 'กำลังค้นหา...' : 'ตำแหน่งของฉัน'}
       </button>
       {locationError && <p className="location-error">ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาต Location ใน browser</p>}
+      {/* ⬅️ แก้ตรงนี้ (ซ่อนการ์ด): พื้นที่สำหรับปุ่มที่ส่งมาจาก MapPage (ปุ่มเรียกการ์ดค้นหากลับมา) */}
+      {children}
     </div>
   )
 }
@@ -775,6 +778,8 @@ export function MapPage() {
   const [showLiveMassOnly, setShowLiveMassOnly] = useState(false)
   // ⬅️ แก้ตรงนี้ (bottom sheet มือถือ): เปิด/พับการ์ด filter (ปุ่มจับจะแสดงเฉพาะจอมือถือ ตาม CSS)
   const [sheetOpen, setSheetOpen] = useState(true)
+  // ⬅️ แก้ตรงนี้ (ซ่อนการ์ด): ซ่อนการ์ด filter ทั้งแผ่นบนจอเดสก์ท็อป/แท็บเล็ต (แยกจาก sheetOpen ของมือถือ)
+  const [panelHidden, setPanelHidden] = useState(false)
 
   const toggleRegion = useCallback((region: Region) => {
     setSelectedRegions((prev) => {
@@ -882,7 +887,8 @@ export function MapPage() {
         </nav>
       </header>
       <div className="map-layout">
-        <aside className={`map-sidebar${sheetOpen ? '' : ' is-collapsed'}`}>
+        {/* ⬅️ แก้ตรงนี้ (ซ่อนการ์ด): เพิ่ม class is-panel-hidden ตอนซ่อน (มีผลเฉพาะจอ >700px ตาม CSS) */}
+        <aside className={`map-sidebar${sheetOpen ? '' : ' is-collapsed'}${panelHidden ? ' is-panel-hidden' : ''}`}>
           {/* ⬅️ แก้ตรงนี้ (bottom sheet มือถือ): ปุ่มจับสำหรับพับ/เปิดการ์ด (ซ่อนบนเดสก์ท็อปด้วย CSS) */}
           <button
             type="button"
@@ -894,6 +900,18 @@ export function MapPage() {
           <header className="map-sidebar-heading">
             <p className="map-sidebar-eyebrow">{lang === 'th' ? 'สำรวจแผนที่' : 'EXPLORE THE MAP'}</p>
             <h1>{tm.heading}</h1>
+            {/* ⬅️ แก้ตรงนี้ (ซ่อนการ์ด): ปุ่มซ่อนการ์ดทั้งแผ่น (แสดงเฉพาะเดสก์ท็อป/แท็บเล็ต ตาม CSS) */}
+            <button
+              type="button"
+              className="map-panel-hide-btn"
+              onClick={() => setPanelHidden(true)}
+              aria-label={lang === 'th' ? 'ซ่อนแผงค้นหา' : 'Hide search panel'}
+              title={lang === 'th' ? 'ซ่อนแผงค้นหา' : 'Hide search panel'}
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path d="m15 6-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </header>
           {/* ⬅️ แก้ตรงนี้ (การ์ดแยก): การ์ด filter แสดงตลอด ไม่ซ่อนตอนเลือกวัดแล้ว (เดิมมีเงื่อนไข !selectedChurch) */}
           <section className="map-control-section" aria-labelledby="region-filter-heading">
@@ -978,7 +996,24 @@ export function MapPage() {
             <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAuthenticated} lang={lang} />
           </aside>
         )}
-        <main className="map-wrap"><MapView onSelect={selectChurch} now={now} churches={visibleChurches} selected={selectedChurch} /></main>
+        <main className="map-wrap">
+          <MapView onSelect={selectChurch} now={now} churches={visibleChurches} selected={selectedChurch}>
+            {/* ⬅️ แก้ตรงนี้ (ซ่อนการ์ด): ปุ่มลอยมุมซ้ายบนของแผนที่ กดแล้วเรียกการ์ดค้นหากลับมา (โผล่เฉพาะตอนซ่อนอยู่) */}
+            {panelHidden && (
+              <button
+                type="button"
+                className="map-panel-reveal"
+                onClick={() => setPanelHidden(false)}
+                aria-label={lang === 'th' ? 'แสดงแผงค้นหา' : 'Show search panel'}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <path d="M4 7h16M7 12h10M10 17h4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                {lang === 'th' ? 'สำรวจแผนที่' : 'Explore the map'}
+              </button>
+            )}
+          </MapView>
+        </main>
       </div>
       {activeModal === 'add' && <AddChurchModal direct={isAuthenticated} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
       {activeModal === 'delete' && <DeleteChurchModal direct={isAuthenticated} churches={churches} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
