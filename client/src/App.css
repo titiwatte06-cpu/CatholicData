@@ -2258,14 +2258,32 @@
   .map-sidebar.is-panel-hidden {
     display: none;
   }
+
+  
+
 }
 
 /* มือถือใช้ปุ่มจับ (bottom sheet) เดิม ไม่ต้องมีปุ่มซ่อน/ปุ่มเรียกกลับชุดนี้ */
 @media (max-width: 700px) {
-  .map-panel-hide-btn,
-  .map-panel-reveal {
-    display: none;
+  .map-panel-hide-btn {
+    display: inline-flex;
+    align-items: center;       /* จัดกึ่งกลางแนวตั้ง */
+    justify-content: center;   /* จัดกึ่งกลางแนวนอน */
+    padding: 0;                /* ปุ่มมี padding เริ่มต้นของเบราว์เซอร์ ทำให้ไอคอนเยื้องได้ */
+    aspect-ratio: 1;           /* บังคับให้เป็นวงกลมพอดี กว้างเท่าสูง */
   }
+  .map-panel-hide-btn svg {
+    display: block;            /* กัน svg เป็น inline แล้วมีช่องว่างใต้บรรทัดดันให้เยื้องลง */
+    flex: none;                /* กันไอคอนโดนบีบเวลาปุ่มแคบ */
+  }
+  
+  .map-panel-hide-btn.is-flipped svg { transform: rotate(90deg); }                        /* การ์ดพับอยู่ ลูกศรชี้ขึ้น */
+
+  /* ตอนพับ เหลือแค่หัวการ์ด (ที่มีลูกศร) ซ่อนส่วนที่เหลือ */
+  .map-sidebar.is-collapsed .map-control-section,
+  .map-sidebar.is-collapsed .live-mass-filter,
+  .map-sidebar.is-collapsed .map-sidebar-results,
+  .map-sidebar.is-collapsed .sidebar-hint { display: none; }
 }
 
 @media (min-width: 701px) {

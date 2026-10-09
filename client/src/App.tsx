@@ -32,6 +32,19 @@ function useMinuteTick(intervalMs = 30000) {
   return now
 }
 
+// ⬅️ แก้ตรงนี้ (ลูกศรบนมือถือ): ตรวจว่าตอนนี้เป็นจอมือถือหรือไม่ (breakpoint เดียวกับ CSS ที่ 700px)
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const onChange = (event: MediaQueryListEvent) => setMatches(event.matches)
+    setMatches(media.matches)
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [query])
+  return matches
+}
+
 type MenuItem = { to: string; title: string; english: string; icon: ReactNode }
 
 const menuItems: MenuItem[] = [
@@ -100,6 +113,8 @@ const detailText = {
     massSchedule: 'ตารางมิสซา',
     priest: 'คุณพ่อเจ้าอาวาส',
     address: 'ที่อยู่',
+    sources: 'แหล่งข้อมูลอ้างอิง',          // ⬅️ แก้ตรงนี้ (แหล่งข้อมูล)
+    noSources: 'ยังไม่ระบุแหล่งข้อมูล',      // ⬅️ แก้ตรงนี้ (แหล่งข้อมูล)
     editDirect: 'แก้ไขข้อมูล',
     editRequest: 'เสนอแก้ไขข้อมูล',
     directions: '↗ นำทางด้วย Google Maps',
@@ -111,6 +126,8 @@ const detailText = {
     massSchedule: 'Mass Schedule',
     priest: 'Parish Priest',
     address: 'Address',
+    sources: 'Sources',                        // ⬅️ แก้ตรงนี้ (แหล่งข้อมูล)
+    noSources: 'No source listed yet',         // ⬅️ แก้ตรงนี้ (แหล่งข้อมูล)
     editDirect: 'Edit Information',
     editRequest: 'Suggest an Edit',
     directions: '↗ Get Directions via Google Maps',
@@ -350,6 +367,9 @@ function InfoBlock({ label, children }: { label: string; children: ReactNode }) 
   return <div className="detail-block"><div className="detail-label">{label}</div><div className="detail-value">{children}</div></div>
 }
 
+// ⬅️ แก้ตรงนี้ (แหล่งข้อมูล): ลิงก์ต้องขึ้นต้นด้วย http(s) เท่านั้น กันกรณีมีคนส่งข้อมูลแปลกๆ เข้ามาในอนาคต (เช่น javascript:)
+const isSafeUrl = (url?: string) => !!url && /^https?:\/\//i.test(url)
+
 // ⬅️ แก้ตรงนี้ (จุดที่ 2): รับ lang เข้ามา, ใช้ detailText[lang] แทน label ที่ hardcode ไว้เดิม, สลับ primary/secondary name
 function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: Church; onEditClick: () => void; canEditDirectly: boolean; lang: 'th' | 'en' }) {
   const td = detailText[lang]
@@ -403,6 +423,25 @@ function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: 
       </InfoBlock>
       <InfoBlock label={td.priest}>{lang === 'en' ? church.priestEn ?? 'English information unavailable' : church.priest}</InfoBlock>
       <InfoBlock label={td.address}>{lang === 'en' ? church.addressEn ?? 'English information unavailable' : church.address}</InfoBlock>
+      {/* ⬅️ แก้ตรงนี้ (แหล่งข้อมูล): บล็อกแสดงแหล่งอ้างอิง ถ้าไม่มีข้อมูลจะขึ้นข้อความ "ยังไม่ระบุ" */}
+      <InfoBlock label={td.sources}>
+        {church.sources?.length ? (
+          <ul className="source-list">
+            {church.sources.map((source, index) => {
+              const text = lang === 'en' ? source.labelEn ?? source.label : source.label
+              return (
+                <li key={index}>
+                  {isSafeUrl(source.url)
+                    ? <a href={source.url} target="_blank" rel="noreferrer noopener">{text} ↗</a>
+                    : text}
+                </li>
+              )
+            })}
+          </ul>
+        ) : (
+          <span className="source-empty">{td.noSources}</span>
+        )}
+      </InfoBlock>
       <button type="button" className="edit-detail-btn" onClick={onEditClick}>✎ {canEditDirectly ? td.editDirect : td.editRequest}</button>
       <a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer">{td.directions}</a>
     </section>
@@ -770,6 +809,7 @@ export function MapPage() {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const now = useMinuteTick()
+  const isMobile = useMediaQuery('(max-width: 700px)')   // ⬅️ แก้ตรงนี้ (ลูกศรบนมือถือ)
 
   const [churches, setChurches] = useState<Church[]>([])
 
@@ -903,10 +943,14 @@ export function MapPage() {
             {/* ⬅️ แก้ตรงนี้ (ซ่อนการ์ด): ปุ่มซ่อนการ์ดทั้งแผ่น (แสดงเฉพาะเดสก์ท็อป/แท็บเล็ต ตาม CSS) */}
             <button
               type="button"
-              className="map-panel-hide-btn"
-              onClick={() => setPanelHidden(true)}
-              aria-label={lang === 'th' ? 'ซ่อนแผงค้นหา' : 'Hide search panel'}
-              title={lang === 'th' ? 'ซ่อนแผงค้นหา' : 'Hide search panel'}
+              className={`map-panel-hide-btn${isMobile && !sheetOpen ? ' is-flipped' : ''}`}
+              onClick={() => (isMobile ? setSheetOpen((current) => !current) : setPanelHidden(true))}   // ⬅️ มือถือ: พับ/เปิดการ์ด, คอม: ซ่อนทั้งแผ่นเหมือนเดิม
+              aria-expanded={isMobile ? sheetOpen : undefined}
+              aria-label={
+                isMobile
+                  ? (sheetOpen ? (lang === 'th' ? 'พับแผงค้นหา' : 'Collapse search panel') : (lang === 'th' ? 'เปิดแผงค้นหา' : 'Expand search panel'))
+                  : (lang === 'th' ? 'ซ่อนแผงค้นหา' : 'Hide search panel')
+              }
             >
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                 <path d="m15 6-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
