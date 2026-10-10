@@ -472,10 +472,11 @@ type AddChurchFormState = {
   lng: string
   priest: string
   mass: string
+  sources: string   // ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม): เก็บเป็นข้อความ บรรทัดละ 1 แหล่ง แล้วค่อยแปลงเป็น array ตอนส่ง
   openHours: string
 }
 
-const emptyAddForm: AddChurchFormState = { name: '', nameEn: '', district: '', address: '', imageUrl: '', lat: '', lng: '', priest: '', mass: '', openHours: '' }
+const emptyAddForm: AddChurchFormState = { name: '', nameEn: '', district: '', address: '', imageUrl: '', lat: '', lng: '', priest: '', mass: '', sources: '', openHours: '' }
 
 // แปลงข้อความช่อง "ตารางมิสซา" เช่น "จันทร์ - เสาร์: 06:00, 18:00; อาทิตย์: 07:00, 09:00, 18:00"
 // ให้เป็น massSchedule array ตามโครงสร้างที่ backend ต้องการ
@@ -502,6 +503,41 @@ function serializeMassSchedule(massSchedule: Church['massSchedule']): string {
   return massSchedule.map((row) => `${row.day}: ${row.times.join(', ')}`).join('; ')
 }
 
+// ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม): ชนิดข้อมูลของ 1 แหล่ง อ้างจาก type Church โดยตรง ไม่ต้อง import เพิ่ม
+type SourceItem = NonNullable<Church['sources']>[number]
+
+// ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม): แปลงข้อความในช่อง "แหล่งข้อมูลอ้างอิง" เป็น array
+// รูปแบบต่อบรรทัด: ชื่อแหล่ง | ลิงก์ | ชื่อภาษาอังกฤษ (สองช่องหลังไม่ใส่ก็ได้)
+// ถ้าวางลิงก์ล้วนๆ จะใช้ลิงก์นั้นเป็นทั้งชื่อและลิงก์ / ลิงก์ที่ไม่ขึ้นต้น http(s) จะไม่ถูกเก็บ
+function parseSourcesInput(raw: string): SourceItem[] {
+  return raw
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [first = '', second = '', third = ''] = line.split('|').map((part) => part.trim())
+      const url = isSafeUrl(first) && !second ? first : second
+      return {
+        label: first,
+        ...(isSafeUrl(url) ? { url } : {}),
+        ...(third ? { labelEn: third } : {}),
+      }
+    })
+    .filter((source) => source.label)
+}
+
+// ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม): แปลง sources ที่มีอยู่กลับเป็นข้อความ ให้ขึ้นในฟอร์มแก้ไข
+// ต้องรวม labelEn ด้วย ไม่งั้นพอกดบันทึก ชื่อภาษาอังกฤษของทุกแหล่งจะหายไป
+function serializeSources(sources: Church['sources']): string {
+  return (sources ?? [])
+    .map((source) => {
+      const parts = [source.label, source.url ?? '', source.labelEn ?? '']
+      while (parts.length > 1 && !parts[parts.length - 1]) parts.pop()   // ตัดช่องว่างท้ายบรรทัดทิ้ง
+      return parts.join(' | ')
+    })
+    .join('\n')
+}
+
 // ⬇️ เพิ่มใหม่: เตรียมค่าเริ่มต้นของฟอร์มแก้ไขจากข้อมูลวัดที่เลือกอยู่
 function buildFormFromChurch(church: Church): AddChurchFormState {
   return {
@@ -514,6 +550,7 @@ function buildFormFromChurch(church: Church): AddChurchFormState {
     lng: String(church.lng),
     priest: church.priest,
     mass: serializeMassSchedule(church.massSchedule),
+    sources: serializeSources(church.sources),   // ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม)
     openHours: church.openHours,
   }
 }
@@ -523,7 +560,8 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
   const [reason, setReason] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'done' | 'error'>('idle')
 
-  const updateField = (key: keyof AddChurchFormState) => (event: ChangeEvent<HTMLInputElement>) =>
+  // ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม): รับ textarea ด้วย เพราะช่องแหล่งข้อมูลเป็นหลายบรรทัด
+  const updateField = (key: keyof AddChurchFormState) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((current) => ({ ...current, [key]: event.target.value }))
 
   const handleSubmit = async (event: FormEvent) => {
@@ -541,6 +579,7 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
       priest: form.priest,
       openHours: form.openHours,
       massSchedule: parseMassScheduleInput(form.mass),
+      sources: parseSourcesInput(form.sources),   // ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม)
     }
     try {
       const res = direct
@@ -615,6 +654,16 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
         <label>เวลาเปิด-ปิด
           <input value={form.openHours} onChange={updateField('openHours')} placeholder="เช่น 06:00 - 19:00 น. ทุกวัน" />
         </label>
+        {/* ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม): ช่องกรอกแหล่งข้อมูลอ้างอิง */}
+        <label>แหล่งข้อมูลอ้างอิง
+          <textarea
+            value={form.sources}
+            onChange={updateField('sources')}
+            rows={3}
+            placeholder={'ป้ายตารางมิสซาของวัด\nสังฆมณฑลจันทบุรี | https://example.com | Diocese of Chanthaburi'}
+          />
+          <small className="field-hint">บรรทัดละ 1 แหล่ง รูปแบบ: ชื่อแหล่ง | ลิงก์ | ชื่อภาษาอังกฤษ (ลิงก์และชื่ออังกฤษไม่ใส่ก็ได้ ลิงก์ต้องขึ้นต้นด้วย https://)</small>
+        </label>
         {!direct && (
           <label>เหตุผล / แหล่งที่มาของข้อมูล (ไม่บังคับ)
             <textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={2} />
@@ -635,7 +684,8 @@ function EditChurchModal({ direct, church, onClose, onSuccess }: { direct: boole
   const [reason, setReason] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'done' | 'error'>('idle')
 
-  const updateField = (key: keyof AddChurchFormState) => (event: ChangeEvent<HTMLInputElement>) =>
+  // ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม): รับ textarea ด้วย เพราะช่องแหล่งข้อมูลเป็นหลายบรรทัด
+  const updateField = (key: keyof AddChurchFormState) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((current) => ({ ...current, [key]: event.target.value }))
 
   const handleSubmit = async (event: FormEvent) => {
@@ -652,6 +702,7 @@ function EditChurchModal({ direct, church, onClose, onSuccess }: { direct: boole
       priest: form.priest,
       openHours: form.openHours,
       massSchedule: parseMassScheduleInput(form.mass),
+      sources: parseSourcesInput(form.sources),   // ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม): ส่งเป็น [] ได้ เพื่อให้ลบแหล่งทั้งหมดได้
     }
     try {
       const res = direct
@@ -725,6 +776,16 @@ function EditChurchModal({ direct, church, onClose, onSuccess }: { direct: boole
         </label>
         <label>เวลาเปิด-ปิด
           <input value={form.openHours} onChange={updateField('openHours')} placeholder="เช่น 06:00 - 19:00 น. ทุกวัน" />
+        </label>
+        {/* ⬅️ แก้ตรงนี้ (แหล่งข้อมูลในฟอร์ม): ช่องแก้ไขแหล่งข้อมูลอ้างอิง (ขึ้นค่าเดิมมาให้แล้วจาก buildFormFromChurch) */}
+        <label>แหล่งข้อมูลอ้างอิง
+          <textarea
+            value={form.sources}
+            onChange={updateField('sources')}
+            rows={3}
+            placeholder={'ป้ายตารางมิสซาของวัด\nสังฆมณฑลจันทบุรี | https://example.com | Diocese of Chanthaburi'}
+          />
+          <small className="field-hint">บรรทัดละ 1 แหล่ง รูปแบบ: ชื่อแหล่ง | ลิงก์ | ชื่อภาษาอังกฤษ (ลบทั้งช่องเพื่อเอาแหล่งข้อมูลออกทั้งหมด)</small>
         </label>
         {!direct && (
           <label>เหตุผล / แหล่งที่มาของข้อมูล (ไม่บังคับ)
