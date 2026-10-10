@@ -79,7 +79,7 @@ const homeText = {
 const mapText = {
   th: {
     home: 'หน้าแรก',
-    admin: 'ผู้ดูแลระบบ',
+    admin: 'เข้าสู่ระบบ',
     logout: 'ออกจากระบบ',
     heading: 'วัดคาทอลิกกรุงเทพฯ',
     searchPlaceholder: 'ค้นหาชื่อวัด',
@@ -92,7 +92,7 @@ const mapText = {
   },
   en: {
     home: 'Home',
-    admin: 'Admin',
+    admin: 'Log in',
     logout: 'Log out',
     heading: 'Catholic Churches in Bangkok',
     searchPlaceholder: 'Search church name',

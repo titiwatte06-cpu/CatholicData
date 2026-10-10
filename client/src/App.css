@@ -2276,7 +2276,7 @@
     display: block;            /* กัน svg เป็น inline แล้วมีช่องว่างใต้บรรทัดดันให้เยื้องลง */
     flex: none;                /* กันไอคอนโดนบีบเวลาปุ่มแคบ */
   }
-  
+
   .map-panel-hide-btn.is-flipped svg { transform: rotate(90deg); }                        /* การ์ดพับอยู่ ลูกศรชี้ขึ้น */
 
   /* ตอนพับ เหลือแค่หัวการ์ด (ที่มีลูกศร) ซ่อนส่วนที่เหลือ */
@@ -2295,5 +2295,45 @@
     left: 14px;                           /* ชิดซ้ายเท่ากับปุ่ม "สำรวจแผนที่" */
     top: 78px;                            /* ต่ำกว่าขอบล่างของปุ่ม + เว้นช่องว่างเล็กน้อย */
     max-height: calc(100% - 78px - 16px); /* กันการ์ดทะลุขอบล่างของแผนที่ */
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-layout {                 /* กล่องนอกสุดที่เป็น display: flex หรือ grid */
+    display: block;               /* เลิกวางเคียงกัน */
+  }
+
+  .admin-sidebar {                /* แถบเมนูสีแดงเข้ม */
+    width: 100%;                  /* ยกเลิกความกว้างคงที่ */
+    height: auto;
+    position: static;             /* ถ้าเดิมเป็น sticky/fixed ให้ยกเลิก */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    overflow-x: auto;             /* เมนูเยอะแล้วเลื่อนแนวนอนได้ */
+  }
+  .admin-sidebar nav {
+    display: flex;
+    gap: 8px;
+  }
+  .admin-sidebar nav a {
+    white-space: nowrap;          /* กันชื่อเมนูหักบรรทัด */
+  }
+
+  .admin-main {                   /* พื้นที่เนื้อหา */
+    width: 100%;
+    min-width: 0;                 /* สำคัญ: ไม่ใส่ จะดันล้นจอ */
+    padding: 16px;
+  }
+  .admin-main h1 {
+    word-break: normal;
+    overflow-wrap: anywhere;      /* ให้หักบรรทัดเฉพาะตอนจำเป็นจริงๆ */
+  }
+
+  .admin-stats {                  /* กลุ่มการ์ดตัวเลข */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
   }
 }

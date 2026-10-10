@@ -9,14 +9,14 @@ export function AdminLogin() {
   const navigate = useNavigate()
   const location = useLocation()
   const text = lang === 'th' ? {
-    title: 'เข้าสู่ระบบผู้ดูแลระบบ',
+    title: 'เข้าสู่ระบบ',
     email: 'อีเมล',
     password: 'รหัสผ่าน',
     invalid: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
     submit: 'เข้าสู่ระบบ',
     submitting: 'กำลังเข้าสู่ระบบ...',
   } : {
-    title: 'Admin sign in',
+    title: 'Sign in',
     email: 'Email',
     password: 'Password',
     invalid: 'Incorrect email or password.',

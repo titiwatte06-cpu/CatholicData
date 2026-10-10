@@ -80,6 +80,12 @@ export function getOpenHoursLabel(openHours: string, lang: 'th' | 'en') {
     .replaceAll('น.', '')
 }
 
+export type ChurchSource = {
+  label: string
+  labelEn?: string
+  url?: string
+}
+
 export type Church = {
   id: string
   name: string
@@ -94,6 +100,7 @@ export type Church = {
   lng: number
   openHours: string
   openHoursEn?: string
+  sources?: ChurchSource[] 
   priest: string
   priestEn?: string
   defaultMassDurationMinutes?: number // ระยะเวลา default ของทั้งวัด
