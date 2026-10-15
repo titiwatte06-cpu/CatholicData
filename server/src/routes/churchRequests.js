@@ -2,6 +2,7 @@ import express from 'express'
 import ChurchRequest from '../models/ChurchRequest.js'
 import Church from '../models/Church.js'
 import { requireAdmin } from '../middleware/requireAdmin.js'
+import { invalidateChurchCache } from '../services/churchCache.js'
 
 const router = express.Router()
 
@@ -34,11 +35,13 @@ router.post('/:id/approve', requireAdmin, async (req, res) => {
   try {
     const request = await ChurchRequest.findById(req.params.id)
     if (!request || request.status !== 'pending') return res.status(404).json({ message: 'not found' })
+    let churchesChanged = false
 
     if (request.type === 'add') {
       const exists = await Church.findOne({ id: request.proposedData?.id })
       if (exists) return res.status(409).json({ message: 'church id already exists' })
       await Church.create(request.proposedData)
+      churchesChanged = true
     }
 
     if (request.type === 'edit') {
@@ -48,16 +51,19 @@ router.post('/:id/approve', requireAdmin, async (req, res) => {
         { new: true, runValidators: true }
       )
       if (!updated) return res.status(404).json({ message: 'ไม่พบวัดที่จะแก้ไข อาจถูกลบไปแล้ว' })
+      churchesChanged = true
     }
 
     if (request.type === 'delete') {
       const deleted = await Church.findOneAndDelete({ id: request.targetChurchId })
       if (!deleted) return res.status(404).json({ message: 'ไม่พบวัดที่จะลบ อาจถูกลบไปแล้ว' })
+      churchesChanged = true
     }
 
     request.status = 'approved'
     request.reviewedAt = new Date()
     await request.save()
+    if (churchesChanged) await invalidateChurchCache()
     res.json(request)
   } catch (err) {
     res.status(400).json({ message: 'อนุมัติคำขอไม่สำเร็จ', error: err.message })

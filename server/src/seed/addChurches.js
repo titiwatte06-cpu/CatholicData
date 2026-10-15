@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { connectDB } from '../config/db.js'
 import Church from '../models/Church.js'
 import { newChurchesBatch } from './churches.newBatch.js'
+import { invalidateChurchCache } from '../services/churchCache.js'
 
 const allNewChurches = [...newChurchesBatch]   // ⬅️ รวมทุก batch ไว้ตรงนี้
 
@@ -27,6 +28,7 @@ async function addChurches() {
   }
 
   console.log(`เสร็จแล้ว: เพิ่มใหม่ ${created} วัด, อัปเดต ${updated} วัด`)
+  await invalidateChurchCache()
   process.exit(0)
 }
 

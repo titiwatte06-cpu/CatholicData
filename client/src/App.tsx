@@ -15,6 +15,7 @@ import { useAdminAuth } from './admin/AdminAuth.tsx'
 import { getMassAlert } from './utils/massAlert'
 import { API_BASE_URL } from './config'
 import { useLanguage } from './LanguageContext'
+import { useChurches } from './hooks/useChurches'
 // ...existing code...
 // ...existing code...
 import { RegionFilter } from './components/RegionFilter'
@@ -872,7 +873,7 @@ export function MapPage() {
   const now = useMinuteTick()
   const isMobile = useMediaQuery('(max-width: 700px)')   // ⬅️ แก้ตรงนี้ (ลูกศรบนมือถือ)
 
-  const [churches, setChurches] = useState<Church[]>([])
+  const { churches, loading: churchesLoading, error: churchesError, refetch: fetchChurches } = useChurches()
 
   // ⬇️ เพิ่มใหม่: state เก็บภาคที่เลือก (เซ็ตว่าง = แสดงทุกภาค กันหน้าว่างเปล่าตอนเปิดหน้าครั้งแรก)
   const [selectedRegions, setSelectedRegions] = useState<Set<Region>>(new Set())
@@ -889,21 +890,6 @@ export function MapPage() {
       return next
     })
   }, [])
-
-  const fetchChurches = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/churches`)
-      if (!res.ok) throw new Error('failed to fetch churches')
-      const data: Church[] = await res.json()
-      setChurches(data)
-    } catch {
-      setChurches([])
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchChurches()
-  }, [fetchChurches])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent | TouchEvent) {
@@ -1081,7 +1067,9 @@ export function MapPage() {
           </section>
           <div className="map-sidebar-results" aria-live="polite">
             <span className="map-sidebar-results-dot" aria-hidden="true" />
-            {lang === 'th' ? `แสดง ${visibleChurches.length} วัดบนแผนที่` : `Showing ${visibleChurches.length} churches on map`}
+            {churchesLoading && churches.length === 0
+              ? tm.loading
+              : lang === 'th' ? `แสดง ${visibleChurches.length} วัดบนแผนที่` : `Showing ${visibleChurches.length} churches on map`}
           </div>
           {!isAuthenticated && (
             <p className="sidebar-hint">{tm.hint}</p>
@@ -1106,6 +1094,17 @@ export function MapPage() {
         )}
         <main className="map-wrap">
           <MapView onSelect={selectChurch} now={now} churches={visibleChurches} selected={selectedChurch}>
+            {churchesLoading && churches.length === 0 && (
+              <div className="map-data-loading" role="status">
+                <span className="map-data-loading-bar" aria-hidden="true" />
+                {tm.loading}
+              </div>
+            )}
+            {churchesError && churches.length === 0 && (
+              <button type="button" className="map-data-error" role="alert" onClick={() => void fetchChurches()}>
+                {tm.loadError}
+              </button>
+            )}
             {/* ⬅️ แก้ตรงนี้ (ซ่อนการ์ด): ปุ่มลอยมุมซ้ายบนของแผนที่ กดแล้วเรียกการ์ดค้นหากลับมา (โผล่เฉพาะตอนซ่อนอยู่) */}
             {panelHidden && (
               <button

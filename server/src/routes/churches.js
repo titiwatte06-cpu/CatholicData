@@ -1,19 +1,34 @@
 import express from 'express'
 import Church from '../models/Church.js'
 import { requireAdmin } from '../middleware/requireAdmin.js'
+import { getChurchList, invalidateChurchCache } from '../services/churchCache.js'
 
 const router = express.Router()
+router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store')
+  next()
+})
 
 // GET /api/churches — public, รายการวัดทั้งหมด
 router.get('/', async (req, res) => {
   try {
-    const churches = (await Church.find().sort({ name: 1 })).map((church) => {
-      const data = church.toObject()
-      return { ...data, region: data.region || 'bangkok' }
+    const { data, etag, cacheStatus } = await getChurchList()
+    res.set({
+      ETag: etag,
+      'Cache-Control': 'public, max-age=0, must-revalidate',
+      'X-Cache': cacheStatus,
     })
-    res.json(churches)
+    res.vary('Origin')
+    const requestEtags = (req.get('If-None-Match') || '').split(',').map((value) => value.trim())
+    const normalizedEtag = etag.replace(/^W\//, '')
+    const isNotModified = requestEtags.includes('*') || requestEtags.some(
+      (candidate) => candidate.replace(/^W\//, '') === normalizedEtag
+    )
+    if (isNotModified) return res.status(304).end()
+    res.json(data)
   } catch (err) {
-    res.status(500).json({ message: 'โหลดข้อมูลวัดไม่สำเร็จ', error: err.message })
+    const status = err.message === 'Database is not connected' ? 503 : 500
+    res.status(status).json({ message: 'โหลดข้อมูลวัดไม่สำเร็จ', error: err.message })
   }
 })
 
@@ -35,6 +50,7 @@ router.post('/', requireAdmin, async (req, res) => {
     const exists = await Church.findOne({ id: req.body.id })
     if (exists) return res.status(409).json({ message: 'church id already exists' })
     const church = await Church.create(req.body)
+    await invalidateChurchCache()
     res.status(201).json(church)
   } catch (err) {
     if (err.code === 11000) {
@@ -53,6 +69,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
       { new: true, runValidators: true }
     )
     if (!church) return res.status(404).json({ message: 'church not found' })
+    await invalidateChurchCache()
     res.json(church)
   } catch (err) {
     res.status(400).json({ message: 'แก้ไขข้อมูลไม่สำเร็จ', error: err.message })
@@ -64,6 +81,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const church = await Church.findOneAndDelete({ id: req.params.id })
     if (!church) return res.status(404).json({ message: 'church not found' })
+    await invalidateChurchCache()
     res.json({ message: 'deleted' })
   } catch (err) {
     res.status(500).json({ message: 'ลบข้อมูลไม่สำเร็จ', error: err.message })

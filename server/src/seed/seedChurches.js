@@ -2,11 +2,13 @@ import 'dotenv/config'
 import { connectDB } from '../config/db.js'
 import Church from '../models/Church.js'
 import { churchSeedData } from './churches.data.js'
+import { invalidateChurchCache } from '../services/churchCache.js'
 
 async function seed() {
   await connectDB()
   await Church.deleteMany({})
   await Church.insertMany(churchSeedData.map((church) => ({ ...church, region: church.region || 'bangkok' })))
+  await invalidateChurchCache()
   console.log(`Seeded ${churchSeedData.length} churches`)
   process.exit(0)
 }
