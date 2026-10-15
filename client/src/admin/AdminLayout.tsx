@@ -8,8 +8,8 @@ export default function AdminLayout() {
   const menuLabel = lang === 'th' ? 'ภาพรวม' : 'Overview'
 
   return (
-    <div className="flex min-h-screen font-sans">
-      <aside className="w-56 bg-[#6B2737] text-white flex flex-col py-6 shrink-0">
+    <div className="admin-layout flex min-h-screen font-sans">
+      <aside className="admin-sidebar w-56 bg-[#6B2737] text-white flex flex-col py-6 shrink-0">
         <div className="px-6 pb-6 border-b border-white/20">
           <p className="text-[11px] font-semibold uppercase tracking-widest opacity-70">
             {lang === 'th' ? 'วัดคาทอลิก' : 'Catholic Churches'}
@@ -46,7 +46,7 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <main className="flex-1 bg-[#FAF7F0] p-8 overflow-y-auto">
+      <main className="admin-main flex-1 bg-[#FAF7F0] p-8 overflow-y-auto">
         <div className="mb-4 flex justify-end">
           <button
             type="button"

@@ -285,7 +285,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="admin-stats grid grid-cols-4 gap-4 mb-8">
         {statCards.map((card) => (
           <div key={card.label} className="bg-white rounded-xl p-6 shadow-sm">
             <p className="text-sm text-[#8A8780]">{card.label}</p>

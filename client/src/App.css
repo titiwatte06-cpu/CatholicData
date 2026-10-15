@@ -2299,41 +2299,43 @@
 }
 
 @media (max-width: 760px) {
-  .admin-layout {                 /* กล่องนอกสุดที่เป็น display: flex หรือ grid */
-    display: block;               /* เลิกวางเคียงกัน */
-  }
-
-  .admin-sidebar {                /* แถบเมนูสีแดงเข้ม */
-    width: 100%;                  /* ยกเลิกความกว้างคงที่ */
-    height: auto;
-    position: static;             /* ถ้าเดิมเป็น sticky/fixed ให้ยกเลิก */
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    overflow-x: auto;             /* เมนูเยอะแล้วเลื่อนแนวนอนได้ */
-  }
-  .admin-sidebar nav {
-    display: flex;
-    gap: 8px;
-  }
-  .admin-sidebar nav a {
-    white-space: nowrap;          /* กันชื่อเมนูหักบรรทัด */
-  }
-
-  .admin-main {                   /* พื้นที่เนื้อหา */
+  .admin-layout { display: block; }
+  .admin-sidebar {
     width: 100%;
-    min-width: 0;                 /* สำคัญ: ไม่ใส่ จะดันล้นจอ */
-    padding: 16px;
-  }
-  .admin-main h1 {
-    word-break: normal;
-    overflow-wrap: anywhere;      /* ให้หักบรรทัดเฉพาะตอนจำเป็นจริงๆ */
-  }
-
-  .admin-stats {                  /* กลุ่มการ์ดตัวเลข */
+    min-width: 0;
+    padding: 12px 16px 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0 12px;
   }
+  .admin-sidebar > div:first-child { padding: 0 0 10px; border: 0; }
+  .admin-sidebar > div:first-child p:first-child { font-size: 10px; }
+  .admin-sidebar > div:first-child p:last-child { font-size: 18px; }
+  .admin-sidebar nav { grid-column: 1 / -1; padding: 0 0 10px; }
+  .admin-sidebar nav a { white-space: nowrap; }
+  .admin-sidebar > div:last-child {
+    grid-column: 1 / -1;
+    border-top: 1px solid rgb(255 255 255 / 20%);
+    padding: 9px 0 11px;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .admin-main { width: 100%; min-width: 0; padding: 20px 16px; overflow-x: hidden; }
+  .admin-main > div:first-child { margin-bottom: 12px; }
+  .admin-main h1 { font-size: 1.4rem; line-height: 1.3; margin-bottom: 18px; overflow-wrap: anywhere; }
+  .admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 22px; }
+  .admin-stats > div { min-width: 0; padding: 14px; }
+  .admin-stats > div p:first-child { font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+  .admin-stats > div p:last-child { font-size: 1.6rem; }
+  #church-search { width: 100%; }
+  .admin-main table { min-width: 760px; }
+  .admin-main th, .admin-main td { padding-left: 12px; padding-right: 12px; }
+}
+
+@media (max-width: 380px) {
+  .admin-main { padding: 16px 12px; }
+  .admin-stats { gap: 8px; }
+  .admin-stats > div { padding: 12px 10px; }
 }
