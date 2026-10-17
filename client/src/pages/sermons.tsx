@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLanguage } from '../LanguageContext'
 import { API_BASE_URL } from '../config'
-import logo from '../assets/logo.svg'
 
 type DailyReading = {
   readingDate: string
@@ -128,7 +127,8 @@ function SermonLayout({ children }: { children: ReactNode }) {
     <main className="content-page">
       <header className="home-topbar">
         <Link to="/" className="home-brand">
-          <img src={logo} alt="วัดคาทอลิก" className="home-logo" />
+          <img src="/logo.svg" alt="วัดคาทอลิก" className="home-logo" />
+          <span>Catholic Data</span>
         </Link>
 
         <button

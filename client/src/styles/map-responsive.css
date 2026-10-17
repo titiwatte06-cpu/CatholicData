@@ -1,0 +1,317 @@
+/* ---- Responsive ---- */
+@media (max-width: 1150px) {
+  .menu-windows {
+    max-width: 640px;
+    grid-template-columns: repeat(2, minmax(0, 300px));
+    row-gap: clamp(16px, 4vw, 30px);
+  }
+
+  .map-sidebar {
+    width: 340px;
+  }
+
+}
+ 
+/* ============================================================
+   Mobile — การ์ดลอยกลายเป็น Bottom Sheet
+   ============================================================ */
+@media (max-width: 700px) {
+  .map-layout {
+    height: calc(100svh - 64px);
+  }
+ 
+  .map-sidebar {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 48svh;
+    border: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transition: max-height 0.25s ease;
+  }
+
+  .map-sidebar.is-collapsed {
+    max-height: 140px;
+    overflow: hidden;
+  }
+
+  .map-sidebar.is-expanded {
+    max-height: 86svh;
+  }
+
+  .map-wrap .leaflet-top.leaflet-left {
+    top: 76px;
+    bottom: auto;
+    right: 12px;
+  }
+
+  .map-sheet-handle {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin: -14px 0 8px;
+    padding: 12px 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .map-sheet-handle::before {
+    width: 48px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--card-line);
+    content: '';
+  }
+ 
+  .map-header {
+    padding: 0 16px;
+  }
+}
+
+@media (min-width: 701px) {
+  .map-sheet-handle {
+    display: none;
+  }
+}
+ 
+@media (max-width: 480px) {
+  .hero-menu {
+    padding: 5vh 6vw;
+  }
+ 
+  .menu-windows {
+    max-width: 300px;
+    grid-template-columns: minmax(0, 300px);
+  }
+ 
+  .menu-window {
+    aspect-ratio: 4 / 3;
+  }
+ 
+  .gold-rule {
+    height: 32px;
+    margin-bottom: 3vh;
+  }
+ 
+  .map-entry {
+    margin-top: 24px;
+  }
+}
+ 
+@media (prefers-reduced-motion: reduce) {
+  .window-frame,
+  .menu-icon,
+  .window-finial,
+  .map-sidebar,
+  .church-card,
+  .region-chip,
+  .home-feature-card,
+  .home-btn,
+  .nav-btn,
+  .locate-button {
+    transition: none;
+  }
+}
+ 
+/* ---- Map sidebar text-color overrides ---- */
+.map-sidebar {
+  color: var(--text);
+}
+ 
+.map-sidebar h1 {
+  color: var(--night);
+}
+ 
+.map-sidebar input {
+  color: var(--text);
+}
+ 
+.map-sidebar input::placeholder {
+  color: #9a8f8a;
+}
+ 
+.church-card {
+  color: var(--text);
+}
+ 
+.card-body strong {
+  color: var(--night);
+}
+ 
+/* ---- Church markers: หมุดน้ำเงิน + กางเขนสีขาว ---- */
+.church-marker-icon {
+  border: 0;
+  background: transparent;
+}
+
+.leaflet-tooltip.church-marker-tooltip-shell {
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(36, 26, 26, 0.2);
+}
+
+.leaflet-tooltip.church-marker-tooltip-shell::before {
+  display: none;
+}
+
+.church-marker-tooltip {
+  width: 156px;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.church-marker-tooltip img {
+  display: block;
+  width: 100%;
+  height: 92px;
+  object-fit: cover;
+  background: #f1ece4;
+}
+
+.church-marker-tooltip span {
+  display: -webkit-box;
+  overflow: hidden;
+  padding: 8px 10px 9px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+ 
+.church-marker-pin {
+  position: absolute;
+  top: 0;
+  left: 4px;
+  display: block;
+  width: 28px;
+  height: 28px;
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0;
+  background: var(--accent);
+  box-shadow: 0 4px 10px rgba(36, 26, 26, 0.45);
+  transform: rotate(-45deg);
+}
+ 
+.church-marker-pin::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  /* วาดกางเขนด้วย gradient สองเส้น แล้วหมุนกลับให้ตั้งตรง */
+  background:
+    linear-gradient(white, white) center / 3px 100% no-repeat,
+    linear-gradient(white, white) center 35% / 100% 3px no-repeat;
+  transform: translate(-50%, -50%) rotate(45deg);
+  content: '';
+}
+
+/* ---- Marker clustering (leaflet.markercluster) ---- */
+.marker-cluster.marker-cluster-small,
+.marker-cluster.marker-cluster-medium,
+.marker-cluster.marker-cluster-large {
+  background: rgba(163, 38, 54, 0.25);
+}
+
+.marker-cluster.marker-cluster-small div,
+.marker-cluster.marker-cluster-medium div,
+.marker-cluster.marker-cluster-large div {
+  background: var(--accent);
+  color: #ffffff;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(36, 26, 26, 0.4);
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.marker-cluster div span {
+  line-height: 24px;
+}
+
+.marker-cluster.marker-cluster-medium div {
+  background: var(--accent-dark);
+}
+
+.marker-cluster.marker-cluster-large div {
+  background: var(--night);
+}
+ 
+/* ---- Map header actions / admin link ---- */
+.map-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+ 
+.map-admin-link {
+  color: var(--header-link);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+ 
+.map-admin-link:hover {
+  color: var(--highlight);
+}
+ 
+/* ---- Sidebar add/remove actions ---- */
+.sidebar-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0;
+}
+ 
+.sidebar-action-btn {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 10px 8px;
+  border: 2px solid var(--card-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+ 
+.sidebar-action-btn span {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+ 
+.sidebar-action-add {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+ 
+.sidebar-action-add:hover {
+  background: var(--accent);
+  color: white;
+}
+ 
+.sidebar-action-remove {
+  border-color: #e9c3bd;
+  color: #a1301f;
+}
+ 
+.sidebar-action-remove:hover {
+  border-color: #a1301f;
+  background: #a1301f;
+  color: white;
+}

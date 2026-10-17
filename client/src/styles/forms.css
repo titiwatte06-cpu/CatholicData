@@ -1,0 +1,409 @@
+/* ============================================================
+   Admin login page
+   ============================================================ */
+.admin-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--night);
+  padding: 24px;
+}
+ 
+.admin-login-form {
+  width: 100%;
+  max-width: 380px;
+  background: #ffffff;
+  border: 0;
+  border-radius: var(--radius-lg);
+  padding: 36px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-float);
+}
+ 
+.admin-login-form h1 {
+  color: var(--night);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+  text-align: center;
+}
+ 
+.admin-login-form label {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: -8px;
+}
+ 
+.admin-login-form input {
+  background: var(--sand);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  color: var(--night);
+  font-size: 1rem;
+  outline: none;
+}
+ 
+.admin-login-form input:focus {
+  border-color: var(--accent);
+  background: #ffffff;
+}
+ 
+.admin-login-form button[type='submit'] {
+  margin-top: 10px;
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+ 
+.admin-login-form button[type='submit']:hover {
+  opacity: 1;
+  background: var(--accent-dark);
+}
+ 
+.admin-login-error {
+  color: #c0392b;
+  font-size: 0.85rem;
+  margin: 0;
+  text-align: center;
+}
+ 
+/* ---- Church marker: open-now state (แสงเทียน) ---- */
+.church-marker-icon.is-open .church-marker-pin {
+  background: var(--highlight);
+  border-color: #ffffff;
+}
+
+.church-marker-icon.is-open .church-marker-pin::after {
+  background:
+    linear-gradient(var(--night), var(--night)) center / 3px 100% no-repeat,
+    linear-gradient(var(--night), var(--night)) center 35% / 100% 3px no-repeat;
+}
+ 
+.church-marker-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--night);
+  color: var(--highlight);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+ 
+.church-open-badge {
+  background: var(--highlight);
+  color: var(--night);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  align-self: center;
+}
+ 
+.open-filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #333;
+  margin: -6px 0 4px;
+}
+ 
+/* ============================================================
+   Modal (Add / Delete church)
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(36, 26, 26, 0.6);
+  backdrop-filter: blur(4px);
+}
+ 
+.modal-box {
+  width: 100%;
+  max-width: 440px;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 28px 26px 26px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  color: var(--text);
+  box-shadow: var(--shadow-float);
+}
+ 
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--accent-soft);
+}
+ 
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--night);
+}
+ 
+.modal-close {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--sand);
+  color: var(--text-soft);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+ 
+.modal-close:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+ 
+.modal-hint {
+  margin: -4px 0 14px;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+ 
+.church-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+ 
+.church-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+ 
+.church-form input,
+.church-form select,
+.church-form textarea {
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  background: var(--sand);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 400;
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+ 
+.church-form input:focus,
+.church-form select:focus,
+.church-form textarea:focus {
+  border-color: var(--accent);
+  background: #ffffff;
+}
+ 
+.church-form textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+ 
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+ 
+.form-row label {
+  flex: 1;
+}
+ 
+.modal-primary-btn {
+  margin-top: 4px;
+  padding: 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+ 
+.modal-primary-btn:hover {
+  opacity: 1;
+  background: var(--accent-dark);
+}
+ 
+.modal-primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+ 
+.modal-success {
+  margin: 4px 0 20px;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: #eaf5ec;
+  color: #1f6b29;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: center;
+}
+ 
+.modal-error {
+  margin: -4px 0 4px;
+  color: #c0392b;
+  font-size: 13px;
+}
+ 
+.sidebar-hint {
+  margin: -6px 0 16px;
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+ 
+/* ============================================================
+   User menu dropdown
+   ============================================================ */
+.map-user-menu {
+  position: relative;
+}
+ 
+.map-user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: var(--accent-soft);
+  border: 2px solid var(--highlight);
+  cursor: pointer;
+}
+ 
+.map-user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: var(--shadow-float);
+  min-width: 170px;
+  overflow: hidden;
+  z-index: 1001;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  padding-top: 8px; /* เผื่อช่องว่างกันเมาส์หลุดจาก avatar ไป dropdown */
+}
+ 
+.map-user-menu:hover .map-user-dropdown,
+.map-user-menu:focus-within .map-user-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+ 
+.map-user-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 12px 18px;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+}
+ 
+.map-user-dropdown-item:hover {
+  background-color: var(--accent-soft);
+}
+ 
+/* ---- Misc field / button helpers ---- */
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-soft);
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+ 
+.edit-detail-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  gap: 6px;
+  margin: 4px 0 10px;
+  padding: 12px;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+ 
+.edit-detail-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+ 
+.map-logo {
+  height: 48px;
+  width: auto;
+}
+ 
+@media (max-width: 480px) {
+  .modal-box {
+    padding: 22px 18px 20px;
+  }
+ 
+  .form-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+

@@ -1,0 +1,294 @@
+/* App.css */
+.region-filter {
+  display: flex;                      /* เดิม grid 2 คอลัมน์ — เปลี่ยนเป็นชิปแคปซูลไหลต่อกัน */
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.region-chip {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--card-line);
+  background: #fff;
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.region-chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.region-chip-all {
+  flex-basis: auto;
+}
+
+.region-chip.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: none;
+}
+
+.region-chip.is-active:hover {
+  border-color: var(--accent-dark);
+  background: var(--accent-dark);
+  color: #fff;
+}
+
+.region-chip-count {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(163, 38, 54, 0.12);
+  font-size: 12px;
+}
+
+.region-chip.is-active .region-chip-count {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.filter-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filter-clear-btn:hover {
+  background: var(--accent-soft);
+}
+
+@media (max-width: 700px) {
+  .map-sidebar {
+    padding: 20px 16px;
+  }
+
+  .map-sidebar-heading {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+  }
+
+  .map-control-section {
+    margin-bottom: 16px;
+  }
+}
+
+
+/* ============================================================
+   หมุดที่ถูกเลือก + การ์ดรายละเอียดวัด (แยกจากการ์ด filter)
+   ใช้ <aside class="church-popcard"> วางเป็นพี่น้องกับ .map-sidebar
+   ภายใน .map-layout (ซึ่งเป็น position: relative อยู่แล้ว)
+   ============================================================ */
+.church-marker-icon.is-selected .church-marker-pin {
+  box-shadow: 0 0 0 5px rgba(242, 169, 59, 0.55), 0 4px 10px rgba(36, 26, 26, 0.45);
+}
+
+.church-popcard {
+  position: absolute;
+  z-index: 6;
+  top: 16px;
+  left: 416px;                       /* 16 + กว้างของ sidebar 384 + ช่องว่าง 16 */
+  width: 360px;
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  padding: 18px 18px 22px;
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: var(--shadow-float);
+  animation: church-popcard-in 0.22s ease;
+}
+
+.church-popcard .detail {
+  padding: 0;
+}
+
+.church-popcard .church-detail-image {
+  height: 180px;
+  margin-bottom: 14px;
+}
+
+.church-popcard-close {
+  position: absolute;
+  z-index: 1;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sand);
+  color: var(--text-soft);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.church-popcard-close:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+@keyframes church-popcard-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 1150px) {
+  .church-popcard {
+    left: 372px;                     /* 16 + 340 + 16 */
+    width: 320px;
+  }
+}
+
+@media (max-width: 700px) {
+  .church-popcard {
+    z-index: 7;                      /* ทับ bottom sheet */
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+    max-height: 62svh;
+    animation-name: church-popcard-up;
+  }
+
+  @keyframes church-popcard-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .church-popcard {
+    animation: none;
+  }
+}
+
+/* ===== ซ่อน/แสดงการ์ดค้นหาทั้งแผ่น (จอ >700px) ===== */
+.map-sidebar-heading {
+  position: relative;
+}
+
+/* ปุ่มซ่อน: วางมุมขวาบนของการ์ด แถวเดียวกับป้าย "สำรวจแผนที่" ไม่ทับชื่อหัวข้อ */
+.map-panel-hide-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  background: #fff;
+  color: #4a2a2f;
+  cursor: pointer;
+}
+
+.map-panel-hide-btn:hover {
+  background: #fdf6f0;
+}
+
+/* ปุ่มเรียกการ์ดกลับมา: ลอยมุมซ้ายบนของแผนที่ */
+.map-panel-reveal {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  color: #1f1f1f;
+  font: inherit;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+
+.map-panel-reveal svg {
+  color: #a52a3a;
+}
+
+.map-panel-reveal:hover {
+  background: #fdf6f0;
+}
+
+/* ซ่อนการ์ดทั้งแผ่น (เฉพาะเดสก์ท็อป/แท็บเล็ต) */
+@media (min-width: 701px) {
+  .map-sidebar.is-panel-hidden {
+    display: none;
+  }
+
+  
+
+}
+
+/* มือถือใช้ปุ่มจับ (bottom sheet) เดิม ไม่ต้องมีปุ่มซ่อน/ปุ่มเรียกกลับชุดนี้ */
+@media (max-width: 700px) {
+  .map-panel-hide-btn {
+    display: inline-flex;
+    align-items: center;       /* จัดกึ่งกลางแนวตั้ง */
+    justify-content: center;   /* จัดกึ่งกลางแนวนอน */
+    padding: 0;                /* ปุ่มมี padding เริ่มต้นของเบราว์เซอร์ ทำให้ไอคอนเยื้องได้ */
+    aspect-ratio: 1;           /* บังคับให้เป็นวงกลมพอดี กว้างเท่าสูง */
+  }
+  .map-panel-hide-btn svg {
+    display: block;            /* กัน svg เป็น inline แล้วมีช่องว่างใต้บรรทัดดันให้เยื้องลง */
+    flex: none;                /* กันไอคอนโดนบีบเวลาปุ่มแคบ */
+  }
+
+  .map-panel-hide-btn.is-flipped svg { transform: rotate(90deg); }                        /* การ์ดพับอยู่ ลูกศรชี้ขึ้น */
+
+  /* ตอนพับ เหลือแค่หัวการ์ด (ที่มีลูกศร) ซ่อนส่วนที่เหลือ */
+  .map-sidebar.is-collapsed .map-control-section,
+  .map-sidebar.is-collapsed .live-mass-filter,
+  .map-sidebar.is-collapsed .map-sidebar-results,
+  .map-sidebar.is-collapsed .sidebar-hint { display: none; }
+}
+
+@media (min-width: 701px) {
+  .church-popcard {
+    transition: left 0.25s ease, top 0.25s ease, max-height 0.25s ease;
+  }
+
+  .church-popcard.is-panel-hidden {
+    left: 14px;                           /* ชิดซ้ายเท่ากับปุ่ม "สำรวจแผนที่" */
+    top: 78px;                            /* ต่ำกว่าขอบล่างของปุ่ม + เว้นช่องว่างเล็กน้อย */
+    max-height: calc(100% - 78px - 16px); /* กันการ์ดทะลุขอบล่างของแผนที่ */
+  }
+}
+

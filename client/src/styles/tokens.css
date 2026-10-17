@@ -1,0 +1,75 @@
+/* ============================================================
+   app-marian-red.css — "Marian Red"
+   แนวคิด: แดงแม่พระ (Marian red) + ทรายอุ่น + แสงเทียน (amber) แถบบนสีดำ
+   - แผนที่เต็มจอ แผงค้นหาเป็นการ์ดลอย และมี "การ์ดรายละเอียดวัด" แยกอีกใบ (.church-popcard)
+   - หมุดรวมกลุ่ม (cluster) สำหรับ leaflet.markercluster
+   ชื่อ class เดิมทั้งหมดยังอยู่ สลับไฟล์ได้เลย
+   ============================================================ */
+
+/* ============================================================
+   Design tokens
+   ============================================================ */
+:root {
+  --ink: #f4f4f4;
+  --deep: #ffffff;
+  --gold: #b6883c;
+  --gold-light: #e8cd8f;
+  --parchment: #000000;
+  --muted: rgba(36, 26, 26, 0.62);
+  --line: #e8dfd2;
+
+  --ivory: #f5f0e6;
+  --navy: #241a1a;
+
+  /* พาเลตต์ Marian Red */
+  --accent: #a32636;          /* Marian red */
+  --accent-dark: #7d1a28;
+  --accent-soft: #f8e5e2;
+  --sand: #f5f0e6;            /* ทรายอุ่น */
+  --sand-deep: #e9e1d0;
+  --night: #241a1a;
+  --highlight: #f2a93b;       /* แสงเทียน */
+  --text: #241a1a;
+  --text-soft: #6a5f5c;
+  --card-line: #e8dfd2;
+  --focus-ring: #a32636;
+
+  /* Header — ดำ (สลับสีได้ที่นี่) */
+  --header-bg: #0a0a0a;
+  --header-fg: #ffffff;
+  --header-link: #f3ead9;
+
+  --radius: 14px;
+  --radius-lg: 24px;
+  --shadow-float: 0 20px 50px -12px rgba(36, 26, 26, 0.35);
+
+  --font-ui: 'Prompt', 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.home-page,
+.map-page,
+.content-page,
+.admin-login-page {
+  font-family: var(--font-ui);
+}
+
+.map-page a:focus-visible,
+.map-page button:focus-visible,
+.map-page input:focus-visible,
+.map-page select:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+ 

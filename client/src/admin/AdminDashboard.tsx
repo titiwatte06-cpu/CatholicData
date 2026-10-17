@@ -84,7 +84,7 @@ export default function AdminDashboard() {
     noResults: 'ไม่พบวัดในภาคหรือคำค้นหานี้',
     church: 'ชื่อวัด', region: 'ภาค', district: 'เขต/อำเภอ', priest: 'คุณพ่อเจ้าอาวาส',
     schedule: 'ตารางมิสซา', status: 'สถานะข้อมูล', action: 'แก้ไขข้อมูล',
-    missing: 'ยังไม่มีข้อมูล', complete: 'ข้อมูลครบ', incompleteStatus: 'ข้อมูลไม่ครบ', days: 'วัน',
+    missing: 'ยังไม่มีข้อมูล', complete: 'ข้อมูลครบ', incompleteStatus: 'ข้อมูลไม่ครบ', days: 'วัน', scrollHint: 'เลื่อนตารางด้านข้างเพื่อดูข้อมูลเพิ่มเติม',
     editTitle: 'แก้ไขข้อมูลวัด', close: 'ปิดหน้าต่าง', churchThai: 'ชื่อวัด (ไทย)',
     churchEnglish: 'ชื่อวัด (English)', province: 'จังหวัด', address: 'ที่อยู่', image: 'URL รูปภาพ', facebook: 'ลิงก์ Facebook',
     latitude: 'ละติจูด', longitude: 'ลองจิจูด', openHours: 'เวลาเปิด-ปิด', cancel: 'ยกเลิก',
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
     noResults: 'No churches match this region or search.',
     church: 'Church', region: 'Region', district: 'District', priest: 'Parish priest',
     schedule: 'Mass schedule', status: 'Data status', action: 'Edit',
-    missing: 'Not provided', complete: 'Complete', incompleteStatus: 'Incomplete', days: 'days',
+    missing: 'Not provided', complete: 'Complete', incompleteStatus: 'Incomplete', days: 'days', scrollHint: 'Scroll horizontally to see more columns',
     editTitle: 'Edit church details', close: 'Close dialog', churchThai: 'Church name (Thai)',
     churchEnglish: 'Church name (English)', province: 'Province', address: 'Address', image: 'Image URL', facebook: 'Facebook URL',
     latitude: 'Latitude', longitude: 'Longitude', openHours: 'Opening hours', cancel: 'Cancel',
@@ -342,7 +342,8 @@ export default function AdminDashboard() {
         />
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+      <p className="admin-table-scroll-hint">{text.scrollHint}</p>
+      <div role="region" aria-label={text.title} tabIndex={0} className="admin-table-region bg-white rounded-lg shadow-sm overflow-x-auto">
         { !loading && filteredChurches.length === 0 ? (
           <div className="px-6 py-12 text-center text-sm text-[#8A8780]">{text.noResults}</div>
         ) : (
@@ -427,7 +428,7 @@ export default function AdminDashboard() {
       </div>
 
       {!loading && filteredChurches.length > 0 && (
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
           <p className="text-sm text-[#8A8780]">{text.pageOf(page, totalPages)}</p>
           <div className="flex gap-2">
             <button

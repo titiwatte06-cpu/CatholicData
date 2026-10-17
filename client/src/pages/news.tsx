@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { API_BASE_URL } from '../config'
 import { useLanguage } from '../LanguageContext'
-import logo from '../assets/logo.svg'
 
 type CatholicNews = {
   _id: string
@@ -94,7 +93,8 @@ export function NewsPage() {
     <main className="content-page">
       <header className="home-topbar">
         <Link to="/" className="home-brand" aria-label={text.back}>
-          <img src={logo} alt="วัดคาทอลิก" className="home-logo" />
+          <img src="/logo.svg" alt="วัดคาทอลิก" className="home-logo" />
+          <span>Catholic Data</span>
         </Link>
         <button type="button" className="home-btn home-btn-outline home-lang-btn" onClick={toggleLang}>
           {lang === 'th' ? 'EN' : 'Thai'}
@@ -132,7 +132,7 @@ export function NewsPage() {
                   {item.excerpt && <p>{item.excerpt}</p>}
                   <div className="external-news-footer">
                     <span>{text.sourceLabel}</span>
-                    <a href={item.url} target="_blank" rel="noreferrer">{text.source} ↗</a>
+                    <a href={item.url} target="_blank" rel="noreferrer noopener">{text.source} ↗</a>
                   </div>
                 </div>
               </article>

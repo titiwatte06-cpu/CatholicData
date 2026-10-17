@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from './AdminAuth.tsx'
 import { useLanguage } from '../LanguageContext'
 
@@ -15,6 +15,7 @@ export function AdminLogin() {
     invalid: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
     submit: 'เข้าสู่ระบบ',
     submitting: 'กำลังเข้าสู่ระบบ...',
+    back: 'กลับไปหน้าแผนที่',
   } : {
     title: 'Sign in',
     email: 'Email',
@@ -22,6 +23,7 @@ export function AdminLogin() {
     invalid: 'Incorrect email or password.',
     submit: 'Sign in',
     submitting: 'Signing in...',
+    back: 'Back to the map',
   }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -44,6 +46,7 @@ export function AdminLogin() {
 
   return (
     <main className="admin-login-page relative">
+      <Link to="/map" className="admin-login-back">← {text.back}</Link>
       <button
         type="button"
         onClick={toggleLang}
@@ -58,6 +61,7 @@ export function AdminLogin() {
         <input
           id="email"
           type="email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -66,11 +70,12 @@ export function AdminLogin() {
         <input
           id="password"
           type="password"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        {error && <p className="admin-login-error">{error}</p>}
+        {error && <p className="admin-login-error" role="alert">{error}</p>}
         <button type="submit" disabled={submitting}>{submitting ? text.submitting : text.submit}</button>
       </form>
     </main>

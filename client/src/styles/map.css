@@ -1,0 +1,435 @@
+/* ============================================================
+   Generic content page
+   ============================================================ */
+.content-page {
+  min-height: 100svh;
+  padding: 8vh 8vw;
+  background: var(--sand);
+}
+ 
+.content-back {
+  color: var(--accent);
+  text-decoration: none;
+}
+ 
+.content-page h1 {
+  margin: 24px 0 12px;
+  color: var(--night);
+  font-weight: 800;
+  font-size: clamp(44px, 7vw, 80px);
+}
+ 
+.content-page > p:last-child {
+  color: var(--muted);
+  font-size: 18px;
+}
+ 
+/* ============================================================
+   Map page — แผนที่เต็มจอ + แผงค้นหาแบบการ์ดลอย
+   ============================================================ */
+.map-page {
+  min-height: 100svh;
+  background: var(--sand);
+  color: var(--text);
+}
+ 
+.map-header {
+  position: relative;
+  z-index: 1000;
+  display: flex;
+  height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--header-bg);
+  color: var(--header-fg);
+}
+ 
+.map-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+ 
+.map-brand span {
+  color: var(--header-fg);
+  font-weight: 700;
+}
+ 
+.map-home-link {
+  color: var(--header-link);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.map-home-link:hover {
+  color: var(--highlight);
+}
+ 
+.map-layout {
+  position: relative;
+  display: block;                     /* เดิม flex — ตอนนี้แผนที่เต็มพื้นที่ แผงลอยทับ */
+  height: calc(100svh - 64px);
+  overflow: hidden;
+}
+ 
+.map-sidebar {
+  position: absolute;
+  z-index: 5;
+  top: 16px;
+  bottom: 16px;
+  left: 16px;
+  width: 384px;
+  overflow-y: auto;
+  padding: 28px 20px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-float);
+}
+ 
+.map-sidebar h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.map-sidebar-heading {
+  margin-bottom: 22px;
+  padding: 0 4px 18px;
+  border-bottom: 2px solid var(--accent-soft);
+}
+
+.map-sidebar-eyebrow {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.map-control-section {
+  margin-bottom: 22px;
+}
+
+.map-control-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 2px 12px;
+}
+
+.map-control-heading h2 {
+  margin: 0;
+  color: var(--night);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.map-control-index {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.map-sidebar .map-search-wrap {
+  position: relative;
+}
+
+.map-sidebar .map-search-wrap > svg {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.map-sidebar input.map-search-input {
+  height: 52px;
+  margin: 0;
+  padding: 10px 42px 10px 46px;
+  border: 2px solid var(--card-line);
+  border-radius: 999px;               /* ช่องค้นหาทรงแคปซูล */
+  background: #ffffff;
+  box-shadow: none;
+  font-size: 16px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.map-sidebar input.map-search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(163, 38, 54, 0.14);
+}
+
+.map-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.map-search-clear:hover {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.map-sidebar-results {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 12px 4px 0;
+  border-top: 2px solid var(--accent-soft);
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.map-sidebar-results-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--highlight);
+}
+ 
+.map-sidebar input {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 11px 14px;
+  border: 2px solid var(--card-line);
+  border-radius: var(--radius);
+  outline: none;
+  background: #ffffff;
+}
+ 
+.map-wrap {
+  position: absolute;                 /* เดิม flex:1 — ตอนนี้เต็มพื้นที่ทั้งหมด */
+  inset: 0;
+  min-width: 0;
+  isolation: isolate;
+}
+
+.map-data-loading {
+  position: absolute;
+  z-index: 1000;
+  top: 16px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  transform: translateX(-50%);
+  padding: 9px 14px;
+  border: 1px solid var(--card-line);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 94%);
+  color: var(--text-main);
+  box-shadow: 0 4px 16px rgb(16 24 40 / 12%);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.map-data-loading-bar {
+  width: 28px;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-soft) 25%, var(--highlight) 50%, var(--accent-soft) 75%);
+  background-size: 200% 100%;
+  animation: map-data-loading-pulse 1.2s ease-in-out infinite;
+}
+
+.map-data-error {
+  position: absolute;
+  z-index: 1000;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 9px 14px;
+  border: 1px solid #f0c4bf;
+  border-radius: 999px;
+  background: #fff8f7;
+  color: #8a2f27;
+  box-shadow: 0 4px 16px rgb(16 24 40 / 12%);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+@keyframes map-data-loading-pulse {
+  to { background-position: -200% 0; }
+}
+
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* ย้ายปุ่มซูมของ Leaflet ไปมุมขวาล่าง ให้พ้นการ์ดลอยทั้งสองใบ */
+.map-wrap .leaflet-top.leaflet-left {
+  top: auto;
+  bottom: 28px;
+  left: auto;
+  right: 16px;
+}
+
+.map-wrap .leaflet-top.leaflet-left .leaflet-control {
+  margin: 0;
+}
+
+.locate-button {
+  position: absolute;
+  z-index: 500;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 10px 24px -8px rgba(163, 38, 54, 0.7);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.locate-button:hover:not(:disabled) {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+}
+
+.locate-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.locate-button span {
+  color: var(--highlight);
+  font-size: 19px;
+  line-height: 1;
+}
+
+.location-error {
+  position: absolute;
+  z-index: 500;
+  top: 76px;
+  right: 16px;
+  max-width: 260px;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: #fff1ee;
+  color: #a1301f;
+  font-size: 13px;
+  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.25);
+}
+ 
+.map {
+  width: 100%;
+  height: 100%;
+  background: #dfe6ea;
+}
+ 
+.church-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+ 
+.church-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 12px 14px;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  background: var(--sand);
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+ 
+.church-card:hover {
+  background: var(--accent-soft);
+  transform: translateX(3px);
+}
+
+.church-card.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+ 
+.card-pin {
+  display: grid;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--accent);
+  color: white;
+}
+ 
+.card-body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+ 
+.card-body strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 700;
+}
+ 
+.card-body small {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+ 
+.no-results {
+  padding: 32px 12px;
+  color: var(--text-soft);
+  text-align: center;
+}
+ 
