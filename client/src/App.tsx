@@ -308,7 +308,20 @@ function MapView({ onSelect, now, churches, selected, children }: { onSelect: (i
       const marker = L.marker([church.lat, church.lng], {
         icon: createChurchIcon(church, now, church.id === selectedId),
       })
-      marker.bindTooltip(church.name, { direction: 'top', offset: [0, -36] })
+      const tooltipContent = document.createElement('div')
+      tooltipContent.className = 'church-marker-tooltip'
+      const tooltipImage = document.createElement('img')
+      tooltipImage.src = isSafeUrl(church.imageUrl) ? church.imageUrl! : churchPlaceholderImage
+      tooltipImage.alt = ''
+      tooltipImage.loading = 'lazy'
+      tooltipImage.onerror = () => {
+        tooltipImage.onerror = null
+        tooltipImage.src = churchPlaceholderImage
+      }
+      const tooltipName = document.createElement('span')
+      tooltipName.textContent = church.name
+      tooltipContent.append(tooltipImage, tooltipName)
+      marker.bindTooltip(tooltipContent, { direction: 'top', offset: [0, -38], className: 'church-marker-tooltip-shell' })
       marker.on('click', () => onSelect(church.id))
       markersRef.current.set(church.id, { marker, church })
       return marker
@@ -368,6 +381,15 @@ function InfoBlock({ label, children }: { label: string; children: ReactNode }) 
   return <div className="detail-block"><div className="detail-label">{label}</div><div className="detail-value">{children}</div></div>
 }
 
+function FacebookLink({ url, lang }: { url?: string; lang: 'th' | 'en' }) {
+  if (!isSafeUrl(url)) return null
+  return (
+    <a className="church-facebook-link" href={url} target="_blank" rel="noopener noreferrer" aria-label={lang === 'th' ? 'เปิด Facebook ของวัด' : 'Open church Facebook page'} title="Facebook">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-8.2h2.8l.4-3.2h-3.2V7.5c0-.9.3-1.5 1.6-1.5h1.7V3.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.3H7.3v3.2h2.8V21z" /></svg>
+    </a>
+  )
+}
+
 // ⬅️ แก้ตรงนี้ (แหล่งข้อมูล): ลิงก์ต้องขึ้นต้นด้วย http(s) เท่านั้น กันกรณีมีคนส่งข้อมูลแปลกๆ เข้ามาในอนาคต (เช่น javascript:)
 const isSafeUrl = (url?: string) => !!url && /^https?:\/\//i.test(url)
 
@@ -417,7 +439,10 @@ function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: 
       )}
       <h2>{primaryName}</h2>
       {secondaryName && <p className="detail-en">{secondaryName}</p>}
-      <span className="district">{getDistrictLabel(church.district, lang)}</span>
+      <div className="detail-meta-row">
+        <span className="district">{getDistrictLabel(church.district, lang)}</span>
+        <FacebookLink url={church.facebookUrl} lang={lang} />
+      </div>
       <InfoBlock label={td.openHours}>{lang === 'en' ? church.openHoursEn ?? getOpenHoursLabel(church.openHours, lang) : church.openHours}</InfoBlock>
       <InfoBlock label={td.massSchedule}>
         <table><tbody>{church.massSchedule.map((row) => <tr key={row.day}><th>{getMassDayLabel(row.day, lang)}</th><td>{row.times.join(' · ')}{td.timeUnit}</td></tr>)}</tbody></table>
@@ -469,6 +494,7 @@ type AddChurchFormState = {
   district: string
   address: string
   imageUrl: string
+  facebookUrl: string
   lat: string
   lng: string
   priest: string
@@ -477,7 +503,7 @@ type AddChurchFormState = {
   openHours: string
 }
 
-const emptyAddForm: AddChurchFormState = { name: '', nameEn: '', district: '', address: '', imageUrl: '', lat: '', lng: '', priest: '', mass: '', sources: '', openHours: '' }
+const emptyAddForm: AddChurchFormState = { name: '', nameEn: '', district: '', address: '', imageUrl: '', facebookUrl: '', lat: '', lng: '', priest: '', mass: '', sources: '', openHours: '' }
 
 // แปลงข้อความช่อง "ตารางมิสซา" เช่น "จันทร์ - เสาร์: 06:00, 18:00; อาทิตย์: 07:00, 09:00, 18:00"
 // ให้เป็น massSchedule array ตามโครงสร้างที่ backend ต้องการ
@@ -547,6 +573,7 @@ function buildFormFromChurch(church: Church): AddChurchFormState {
     district: church.district,
     address: church.address,
     imageUrl: church.imageUrl ?? '',
+    facebookUrl: church.facebookUrl ?? '',
     lat: String(church.lat),
     lng: String(church.lng),
     priest: church.priest,
@@ -575,6 +602,7 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
       district: form.district,
       address: form.address,
       imageUrl: form.imageUrl || undefined,
+      facebookUrl: form.facebookUrl || undefined,
       lat: Number(form.lat),
       lng: Number(form.lng),
       priest: form.priest,
@@ -632,6 +660,9 @@ function AddChurchModal({ direct, onClose, onSuccess }: { direct: boolean; onClo
         </label>
         <label>URL รูปภาพวัด
           <input value={form.imageUrl} onChange={updateField('imageUrl')} type="url" placeholder="https://..." />
+        </label>
+        <label>ลิงก์ Facebook วัด
+          <input value={form.facebookUrl} onChange={updateField('facebookUrl')} type="url" placeholder="https://www.facebook.com/..." />
         </label>
         <div className="form-row">
           <label>ละติจูด (lat)
@@ -698,6 +729,7 @@ function EditChurchModal({ direct, church, onClose, onSuccess }: { direct: boole
       district: form.district,
       address: form.address,
       imageUrl: form.imageUrl || undefined,
+      facebookUrl: form.facebookUrl || undefined,
       lat: Number(form.lat),
       lng: Number(form.lng),
       priest: form.priest,
@@ -755,6 +787,9 @@ function EditChurchModal({ direct, church, onClose, onSuccess }: { direct: boole
         </label>
         <label>URL รูปภาพวัด
           <input value={form.imageUrl} onChange={updateField('imageUrl')} type="url" placeholder="https://..." />
+        </label>
+        <label>ลิงก์ Facebook วัด
+          <input value={form.facebookUrl} onChange={updateField('facebookUrl')} type="url" placeholder="https://www.facebook.com/..." />
         </label>
         <div className="form-row">
           <label>ละติจูด (lat)

@@ -86,7 +86,7 @@ export default function AdminDashboard() {
     schedule: 'ตารางมิสซา', status: 'สถานะข้อมูล', action: 'แก้ไขข้อมูล',
     missing: 'ยังไม่มีข้อมูล', complete: 'ข้อมูลครบ', incompleteStatus: 'ข้อมูลไม่ครบ', days: 'วัน',
     editTitle: 'แก้ไขข้อมูลวัด', close: 'ปิดหน้าต่าง', churchThai: 'ชื่อวัด (ไทย)',
-    churchEnglish: 'ชื่อวัด (English)', province: 'จังหวัด', address: 'ที่อยู่', image: 'URL รูปภาพ',
+    churchEnglish: 'ชื่อวัด (English)', province: 'จังหวัด', address: 'ที่อยู่', image: 'URL รูปภาพ', facebook: 'ลิงก์ Facebook',
     latitude: 'ละติจูด', longitude: 'ลองจิจูด', openHours: 'เวลาเปิด-ปิด', cancel: 'ยกเลิก',
     saving: 'กำลังบันทึก...', save: 'บันทึกข้อมูล', massPlaceholder: 'จันทร์ - เสาร์: 06:00, 18:00; อาทิตย์: 07:00, 09:00',
     delete: 'ลบ', deleting: 'กำลังลบ...',
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
     schedule: 'Mass schedule', status: 'Data status', action: 'Edit',
     missing: 'Not provided', complete: 'Complete', incompleteStatus: 'Incomplete', days: 'days',
     editTitle: 'Edit church details', close: 'Close dialog', churchThai: 'Church name (Thai)',
-    churchEnglish: 'Church name (English)', province: 'Province', address: 'Address', image: 'Image URL',
+    churchEnglish: 'Church name (English)', province: 'Province', address: 'Address', image: 'Image URL', facebook: 'Facebook URL',
     latitude: 'Latitude', longitude: 'Longitude', openHours: 'Opening hours', cancel: 'Cancel',
     saving: 'Saving...', save: 'Save changes', massPlaceholder: 'Monday - Saturday: 06:00, 18:00; Sunday: 07:00, 09:00',
     delete: 'Delete', deleting: 'Deleting...',
@@ -210,6 +210,7 @@ export default function AdminDashboard() {
       region: editForm.region,
       address: editForm.address,
       imageUrl: editForm.imageUrl || undefined,
+      facebookUrl: editForm.facebookUrl || undefined,
       lat: Number(editForm.lat),
       lng: Number(editForm.lng),
       priest: editForm.priest,
@@ -490,6 +491,9 @@ export default function AdminDashboard() {
               </label>
               <label className="flex flex-col gap-1 text-sm text-[#4B4945] sm:col-span-2">{text.image}
                 <input type="url" value={editForm.imageUrl ?? ''} onChange={(event) => setEditForm({ ...editForm, imageUrl: event.target.value })} className="rounded border border-[#DDD9D0] px-3 py-2" />
+              </label>
+              <label className="flex flex-col gap-1 text-sm text-[#4B4945] sm:col-span-2">{text.facebook}
+                <input type="url" value={editForm.facebookUrl ?? ''} onChange={(event) => setEditForm({ ...editForm, facebookUrl: event.target.value })} placeholder="https://www.facebook.com/..." className="rounded border border-[#DDD9D0] px-3 py-2" />
               </label>
               <label className="flex flex-col gap-1 text-sm text-[#4B4945]">{text.latitude}
                 <input type="number" step="any" required value={editForm.lat} onChange={(event) => setEditForm({ ...editForm, lat: Number(event.target.value) })} className="rounded border border-[#DDD9D0] px-3 py-2" />

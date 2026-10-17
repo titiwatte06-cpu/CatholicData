@@ -18,6 +18,7 @@ const churchSchema = new mongoose.Schema({
   name: String,
   nameEn: String,
   imageUrl: String,
+  facebookUrl: String,
   district: String,
   province: String,
   address: String,

@@ -91,6 +91,7 @@ export type Church = {
   name: string
   nameEn: string
   imageUrl?: string
+  facebookUrl?: string
   district: string
   province?: string
   address: string
