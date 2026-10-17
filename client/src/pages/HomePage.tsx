@@ -127,9 +127,12 @@ export function HomePage() {
         .landing-hero {
           display: grid;
           grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-          align-items: start;
-          gap: 52px;
-          margin-top: 80px;
+          align-items: center;
+          gap: 64px;
+          width: 100%;
+          max-width: 1480px;
+          min-height: calc(100svh - 150px);
+          margin: 0 auto;
         }
         .landing-hero-copy { min-width: 0; }
         .landing-badge {
@@ -144,7 +147,7 @@ export function HomePage() {
         .landing-title {
           margin: 20px 0 16px;
           font-family: 'Prompt', 'Noto Sans Thai', sans-serif;
-          font-size: 62px;
+          font-size: 70px;
           font-weight: 600;
           line-height: 1.15;
           letter-spacing: -.025em;
@@ -153,7 +156,7 @@ export function HomePage() {
           max-width: 480px;
           margin: 0 0 32px;
           color: var(--landing-muted);
-          font-size: 19px;
+          font-size: 20px;
           line-height: 1.7;
         }
         .landing-cta { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -246,14 +249,14 @@ export function HomePage() {
         .landing-live-empty { margin: 18px 0 2px; color: var(--landing-muted); font-size: 15px; line-height: 1.65; }
         @media (max-width: 1024px) {
           .landing-page { padding-right: 32px; padding-left: 32px; }
-          .landing-hero { gap: 32px; margin-top: 68px; }
-          .landing-title { font-size: clamp(42px, 5.9vw, 60px); }
+          .landing-hero { gap: 32px; min-height: calc(100svh - 130px); }
+          .landing-title { font-size: clamp(48px, 5.5vw, 68px); }
           .landing-nav { gap: 16px; font-size: 14px; }
         }
         @media (max-width: 860px) {
           .landing-page { padding: 20px; }
           .landing-nav { display: none; }
-          .landing-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 40px; }
+          .landing-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; min-height: 0; margin: 40px auto 0; }
           .landing-title { font-size: clamp(44px, 7.4vw, 56px); }
           .landing-description { font-size: 18px; }
           .landing-live-card { justify-self: stretch; max-width: none; margin-top: 0; }
