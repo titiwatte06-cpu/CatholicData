@@ -118,7 +118,7 @@ const detailText = {
     noSources: 'ยังไม่ระบุแหล่งข้อมูล',      // ⬅️ แก้ตรงนี้ (แหล่งข้อมูล)
     editDirect: 'แก้ไขข้อมูล',
     editRequest: 'เสนอแก้ไขข้อมูล',
-    directions: '↗ นำทางด้วย Google Maps',
+    directions: 'นำทางด้วย Google Maps',
     timeUnit: ' น.',
   },
   en: {
@@ -131,7 +131,7 @@ const detailText = {
     noSources: 'No source listed yet',         // ⬅️ แก้ตรงนี้ (แหล่งข้อมูล)
     editDirect: 'Edit Information',
     editRequest: 'Suggest an Edit',
-    directions: '↗ Get Directions via Google Maps',
+    directions: 'Get Directions via Google Maps',
     timeUnit: '',
   },
 }
@@ -469,7 +469,10 @@ function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: 
         )}
       </InfoBlock>
       <button type="button" className="edit-detail-btn" onClick={onEditClick}>✎ {canEditDirectly ? td.editDirect : td.editRequest}</button>
-      <a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer">{td.directions}</a>
+      <a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 10.2c0 5.2-8.2 11.3-8.2 11.3S3.8 15.4 3.8 10.2a8.2 8.2 0 1 1 16.4 0Z" /><circle cx="12" cy="10" r="2.8" /></svg>
+        <span>{td.directions}</span>
+      </a>
     </section>
   )
 }

@@ -956,7 +956,11 @@
  
 .nav-btn {
   display: flex;
+  width: 100%;
+  align-items: center;
   justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
   margin-top: 14px;
   padding: 15px 14px;
   border-radius: 999px;
@@ -967,6 +971,17 @@
   text-decoration: none;
   box-shadow: 0 10px 24px -10px rgba(163, 38, 54, 0.8);
   transition: background 0.15s, transform 0.15s;
+}
+
+.nav-btn svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 .nav-btn:hover {
@@ -1700,8 +1715,10 @@
  
 .edit-detail-btn {
   display: flex;
+  width: 100%;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   gap: 6px;
   margin: 4px 0 10px;
   padding: 12px;
