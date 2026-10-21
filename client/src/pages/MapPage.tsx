@@ -82,8 +82,14 @@ export function MapPage() {
       .includes(query.toLowerCase())
   )
 
+  const selectableChurches = regionFilteredChurches.filter((church) =>
+    `${church.name} ${church.nameEn} ${church.district} ${church.province ?? ''} ${church.address}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase())
+  )
+
   const selectChurch = useCallback((id: string) => {
-    if (isMobile) setSheetOpen(false)
+    if (isMobile) setSheetOpen(true)
     navigate(`/map/church/${id}`)
   }, [isMobile, navigate])
 
@@ -200,6 +206,25 @@ export function MapPage() {
                 </button>
               )}
             </div>
+            <label className="map-church-select-label" htmlFor="map-church-select">
+              {lang === 'th' ? 'หรือเลือกวัดจากรายการ' : 'Or choose a church'}
+            </label>
+            <select
+              id="map-church-select"
+              className="map-church-select"
+              value={selectedChurch && selectableChurches.some((church) => church.id === selectedChurch.id) ? selectedChurch.id : ''}
+              onChange={(event) => {
+                if (event.target.value) selectChurch(event.target.value)
+              }}
+              aria-label={lang === 'th' ? 'เลือกวัดจากสังฆมณฑลที่เลือก' : 'Choose a church from the selected dioceses'}
+            >
+              <option value="">{lang === 'th' ? `เลือกวัด (${selectableChurches.length} แห่ง)` : `Choose a church (${selectableChurches.length})`}</option>
+              {selectableChurches.map((church) => (
+                <option key={church.id} value={church.id}>
+                  {lang === 'th' ? church.name : church.nameEn} · {church.district}
+                </option>
+              ))}
+            </select>
           </section>
           <button
             type="button"
@@ -210,7 +235,7 @@ export function MapPage() {
             <span className="live-mass-dot" aria-hidden="true" />
             {lang === 'th' ? 'วัดที่กำลังมีมิสซา' : 'Mass happening now'}
           </button>
-          <section className="map-control-section map-manage-section" aria-labelledby="map-manage-heading">
+          {isAuthenticated && <section className="map-control-section map-manage-section" aria-labelledby="map-manage-heading">
             <div className="map-control-heading">
               <span className="map-control-index">03</span>
               <h2 id="map-manage-heading">{lang === 'th' ? 'จัดการข้อมูล' : 'Church data'}</h2>
@@ -223,16 +248,34 @@ export function MapPage() {
               {tm.remove}
             </button>
             </div>
-          </section>
+          </section>}
           <div className="map-sidebar-results" aria-live="polite">
             <span className="map-sidebar-results-dot" aria-hidden="true" />
             {churchesLoading && churches.length === 0
               ? tm.loading
               : lang === 'th' ? `แสดง ${visibleChurches.length} วัดบนแผนที่` : `Showing ${visibleChurches.length} churches on map`}
           </div>
-          {!isAuthenticated && (
-            <p className="sidebar-hint">{tm.hint}</p>
-          )}
+          <section className="map-church-directory" aria-label={lang === 'th' ? 'รายชื่อวัด' : 'Churches'}>
+            {visibleChurches.length === 0 ? (
+              <p className="map-directory-empty">{tm.noResults}</p>
+            ) : visibleChurches.map((church) => (
+              <button
+                type="button"
+                className={`map-directory-card${selectedChurch?.id === church.id ? ' is-selected' : ''}`}
+                key={church.id}
+                onClick={() => selectChurch(church.id)}
+                aria-label={`${lang === 'th' ? church.name : church.nameEn}, ${lang === 'th' ? 'ดูรายละเอียดวัด' : 'view church details'}`}
+              >
+                <img src={church.imageUrl || '/church-placeholder.svg'} alt="" loading="lazy" onError={(event) => { event.currentTarget.src = '/church-placeholder.svg' }} />
+                <span className="map-directory-card-body">
+                  <strong>{lang === 'th' ? church.name : church.nameEn}</strong>
+                  {lang === 'th' && <span lang="en">{church.nameEn}</span>}
+                  <small>{church.district}</small>
+                </span>
+                <span className="map-directory-arrow" aria-hidden="true">›</span>
+              </button>
+            ))}
+          </section>
         </aside>
         {selectedChurch && (
           <aside

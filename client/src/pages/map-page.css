@@ -3,6 +3,34 @@
   color: var(--text);
 }
 
+.map-church-directory { display: none; }
+
+.map-church-select-label {
+  display: block;
+  margin: 10px 2px 6px;
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.map-church-select {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 42px 10px 14px;
+  border: 1px solid var(--card-line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.map-church-select:focus-visible {
+  outline: 3px solid rgb(201 165 74 / 45%);
+  outline-offset: 2px;
+}
+
 .map-header-actions {
   display: flex;
   align-items: center;
@@ -78,4 +106,147 @@
     font-size: 12px;
   }
 
+}
+
+/* Mobile directory layout: keep search and church choices in a scrollable page. */
+@media (max-width: 700px) {
+  .map-page {
+    min-height: 100svh;
+    background: #dce6f1;
+    color: #14213d;
+  }
+
+  .map-header {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    height: 52px;
+    padding: 0 14px;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 94%);
+    color: #14213d;
+    box-shadow: 0 8px 28px rgb(20 33 61 / 12%);
+  }
+
+  .map-brand { gap: 8px; }
+  .map-brand strong { display: inline; color: #14213d; font-size: 15px; }
+  .map-logo { display: none; }
+  .map-header-actions { gap: 12px; }
+  .map-header .map-home-link,
+  .map-header .map-admin-link { color: #35415b; font-size: 13px; }
+  .map-header .home-lang-btn { min-height: 40px; color: #14213d; }
+
+  .map-layout {
+    display: flex;
+    min-height: 100svh;
+    height: auto;
+    flex-direction: column;
+    gap: 14px;
+    overflow: visible;
+    padding: 78px 16px 24px;
+  }
+
+  .map-wrap {
+    position: relative;
+    z-index: 1;
+    order: -1;
+    width: calc(100% + 32px);
+    height: 42svh;
+    min-height: 280px;
+    max-height: 440px;
+    flex: none;
+    margin: -78px -16px 2px;
+    border-radius: 0 0 22px 22px;
+    overflow: hidden;
+  }
+
+  .map-container, .map { height: 100%; min-height: 0; }
+  .map-wrap .leaflet-control-attribution { font-size: 10px; }
+
+  .map-sidebar {
+    position: relative;
+    z-index: 2;
+    inset: auto;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 18px;
+    border: 0;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 12px 36px rgb(20 33 61 / 14%);
+  }
+
+  .map-sidebar.is-collapsed { max-height: none; overflow: visible; }
+  .map-sheet-handle { display: none; }
+  .map-sidebar-heading { margin: 0 0 18px; padding: 0; border: 0; }
+  .map-sidebar-eyebrow {
+    margin-bottom: 5px;
+    padding: 0;
+    background: transparent;
+    color: #80601a;
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+  .map-sidebar h1 { font-size: 23px; line-height: 1.35; }
+  .map-panel-hide-btn { display: none; }
+  .map-control-section { margin-bottom: 18px; }
+  .map-control-heading { gap: 6px; margin: 0 0 8px; }
+  .map-control-index { display: none; }
+  .map-control-heading h2 { color: #5b6478; font-size: 14px; font-weight: 500; }
+  .region-filter { gap: 7px; }
+  .region-chip { min-height: 46px; padding: 8px 14px; border-width: 1px; color: #14213d; font-size: 14px; }
+  .region-chip.is-active { background: #14213d; border-color: #14213d; }
+  .map-sidebar input.map-search-input { height: 52px; border: 1px solid #d5dae5; border-radius: 13px; background: #f4f6fa; padding-left: 16px; font-size: 16px; }
+  .map-sidebar .map-search-wrap > svg { display: none; }
+  .map-search-clear { width: 40px; height: 40px; }
+  .live-mass-filter { min-height: 50px; margin: -2px 0 4px; border-radius: 13px; font-size: 15px; }
+  .map-sidebar-results, .sidebar-hint, .map-manage-section { display: none; }
+  .map-church-directory { display: grid; gap: 14px; }
+  .map-directory-card {
+    display: flex;
+    width: 100%;
+    min-height: 100px;
+    align-items: center;
+    gap: 14px;
+    padding: 0;
+    overflow: hidden;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    background: #fff;
+    color: #14213d;
+    text-align: left;
+    box-shadow: 0 12px 32px rgb(20 33 61 / 13%);
+    cursor: pointer;
+  }
+  .map-directory-card:focus-visible { outline: 3px solid #b48825; outline-offset: 3px; }
+  .map-directory-card.is-selected { border-color: #c9a54a; }
+  .map-directory-card > img { width: 104px; height: 104px; flex: none; object-fit: cover; background: #20365f; }
+  .map-directory-card-body { display: grid; min-width: 0; gap: 3px; padding: 12px 0; }
+  .map-directory-card-body strong { font-size: 18px; line-height: 1.4; }
+  .map-directory-card-body > span { color: #5b6478; font-size: 14px; }
+  .map-directory-card-body small { width: fit-content; margin-top: 3px; padding: 4px 10px; border-radius: 999px; background: #f6efdd; color: #6f5314; font-size: 13px; }
+  .map-directory-arrow { margin-left: auto; padding: 12px; color: #5b6478; font-size: 26px; }
+  .map-directory-empty { margin: 0; padding: 20px; border-radius: 16px; background: white; color: #5b6478; text-align: center; font-size: 16px; }
+
+  .church-popcard {
+    position: relative;
+    z-index: 2;
+    inset: auto;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 18px;
+    border-radius: 22px;
+  }
+  .church-popcard-close { width: 44px; height: 44px; }
+  .map-wrap .leaflet-top.leaflet-left { top: 12px; right: 12px; bottom: auto; left: auto; }
+}
+
+@media (max-width: 380px) {
+  .map-header-actions { gap: 7px; }
+  .map-header .map-home-link { display: none; }
+  .map-directory-card > img { width: 88px; height: 100px; }
+  .map-directory-card-body strong { font-size: 16px; }
 }

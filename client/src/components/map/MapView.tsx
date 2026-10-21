@@ -3,7 +3,7 @@ import L from 'leaflet'
 import 'leaflet.markercluster'
 import type { Church } from '../../data/churches'
 import { getMassAlert } from '../../utils/massAlert'
-import { churchPlaceholderImage, isSafeUrl, mapCenter } from '../../pages/map/mapUtils'
+import { mapCenter } from '../../pages/map/mapUtils'
 
 function createChurchIcon(church: Church, now: Date, isSelected: boolean) {
   const alert = getMassAlert(church, now)
@@ -117,20 +117,6 @@ export function MapView({ onSelect, now, churches, selected, children }: { onSel
       const marker = L.marker([church.lat, church.lng], {
         icon: createChurchIcon(church, now, church.id === selectedId),
       })
-      const tooltipContent = document.createElement('div')
-      tooltipContent.className = 'church-marker-tooltip'
-      const tooltipImage = document.createElement('img')
-      tooltipImage.src = isSafeUrl(church.imageUrl) ? church.imageUrl! : churchPlaceholderImage
-      tooltipImage.alt = ''
-      tooltipImage.loading = 'lazy'
-      tooltipImage.onerror = () => {
-        tooltipImage.onerror = null
-        tooltipImage.src = churchPlaceholderImage
-      }
-      const tooltipName = document.createElement('span')
-      tooltipName.textContent = church.name
-      tooltipContent.append(tooltipImage, tooltipName)
-      marker.bindTooltip(tooltipContent, { direction: 'top', offset: [0, -38], className: 'church-marker-tooltip-shell' })
       marker.on('click', () => onSelect(church.id))
       markersRef.current.set(church.id, { marker, church })
       return marker
