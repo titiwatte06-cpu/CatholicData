@@ -9,7 +9,6 @@ const landingText = {
   th: {
     home: 'หน้าแรก',
     map: 'แผนที่',
-    sermons: 'บทเทศน์',
     news: 'ข่าวและกิจกรรม',
     contact: 'ติดต่อเรา',
     language: 'EN',
@@ -27,7 +26,6 @@ const landingText = {
   en: {
     home: 'Home',
     map: 'Map',
-    sermons: 'Sermons',
     news: 'News & Events',
     contact: 'Contact',
     language: 'ไทย',
@@ -310,7 +308,6 @@ export function HomePage() {
 
           <nav className="landing-nav" aria-label={lang === 'th' ? 'เมนูหลัก' : 'Main navigation'}>
             <Link to="/map">{t.map}</Link>
-            <Link to="/sermons">{t.sermons}</Link>
             <Link to="/news">{t.news}</Link>
             <Link to="/contact">{t.contact}</Link>
           </nav>

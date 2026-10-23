@@ -6,7 +6,6 @@ import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import './index.css'
 import { ContentPage, HomePage, MapPage } from './App.tsx'
-import { SermonsPage, SermonDetailPage } from './pages/sermons'
 import { NewsPage } from './pages/news'
 import { AdminAuthProvider } from './admin/AdminAuth.tsx'
 import { AdminLogin } from './admin/AdminLogin.tsx'
@@ -24,10 +23,6 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/" element={<HomePage />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/map/church/:churchId" element={<MapPage />} />
-
-            {/* เพิ่ม routes สำหรับหน้าบทเทศน์ */}
-            <Route path="/sermons" element={<SermonsPage />} />
-            <Route path="/sermons/:sermonId" element={<SermonDetailPage />} />
 
             {/* หน้าอื่นยังใช้ ContentPage เดิม */}
             <Route path="/about" element={<ContentPage title="เกี่ยวกับเรา" english="About Us" />} />
