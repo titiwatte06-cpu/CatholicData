@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../LanguageContext'
-import { useChurches } from '../hooks/useChurches'
-import { useMinuteTick } from '../hooks/useMinuteTick'
-import { getMassAlert } from '../utils/massAlert'
+import { API_BASE_URL } from '../config'
+
+type DailyReading = { readingDate: string; title: string; content: string; sourceUrl: string }
 
 const landingText = {
   th: {
@@ -45,13 +46,26 @@ const landingText = {
 
 export function HomePage() {
   const { lang, toggleLang } = useLanguage()
-  const { churches, loading, error } = useChurches()
-  const now = useMinuteTick()
+  const [dailyReading, setDailyReading] = useState<DailyReading | null>(null)
+  const [dailyLoading, setDailyLoading] = useState(true)
+  const [dailyError, setDailyError] = useState(false)
   const t = landingText[lang]
-  const activeMasses = churches
-    .map((church) => ({ church, alert: getMassAlert(church, now) }))
-    .filter(({ alert }) => alert.active)
-    .slice(0, 3)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch(`${API_BASE_URL}/api/daily-reading/today`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Daily reading request failed')
+        return response.json() as Promise<DailyReading>
+      })
+      .then(setDailyReading)
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setDailyError(true)
+      })
+      .finally(() => { if (!controller.signal.aborted) setDailyLoading(false) })
+    return () => controller.abort()
+  }, [])
 
   return (
     <main className="landing-page">
@@ -193,6 +207,13 @@ export function HomePage() {
           background: var(--landing-white);
           box-shadow: 0 24px 60px rgba(20, 33, 61, .12);
         }
+        .landing-reading-card { width: 100%; max-width: 760px; justify-self: end; margin-top: 16px; padding: 32px; border: 1px solid rgba(203, 210, 224, .8); border-radius: 24px; background: #fff; color: var(--landing-ink); box-shadow: 0 18px 44px rgba(20, 33, 61, .08); }
+        .landing-reading-eyebrow { margin: 0 0 12px; color: #315184; font-size: 13px; font-weight: 700; }
+        .landing-reading-title { margin: 0 0 8px; color: var(--landing-ink); font: 700 26px/1.4 'Prompt', 'Noto Sans Thai', sans-serif; }
+        .landing-reading-date { margin: 0 0 16px; color: #315184; font-size: 13px; font-weight: 600; }
+        .landing-reading-content { margin: 0 0 18px; color: #263b5e; font-size: 15px; line-height: 1.85; white-space: pre-line; display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 5; }
+        .landing-reading-source { color: #315184 !important; font-size: 13px; font-weight: 700; }
+        .landing-reading-state { margin: 0; color: var(--landing-ink); line-height: 1.7; }
         .landing-live-head {
           display: flex;
           align-items: center;
@@ -259,7 +280,7 @@ export function HomePage() {
           .landing-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; min-height: 0; margin: 40px auto 0; }
           .landing-title { font-size: clamp(44px, 7.4vw, 56px); }
           .landing-description { font-size: 18px; }
-          .landing-live-card { justify-self: stretch; max-width: none; margin-top: 0; }
+          .landing-reading-card { justify-self: stretch; max-width: none; margin-top: 0; }
         }
         @media (max-width: 480px) {
           .landing-page { padding: 16px; }
@@ -271,12 +292,9 @@ export function HomePage() {
           .landing-description { margin-bottom: 24px; font-size: 16px; }
           .landing-cta { display: grid; grid-template-columns: 1fr; gap: 10px; }
           .landing-btn { width: 100%; min-height: 52px; padding: 14px 24px; }
-          .landing-live-card { margin-top: 0; padding: 20px; border-radius: 24px; }
-          .landing-live-head { font-size: 16px; }
-          .landing-mass-row { gap: 10px; }
-          .landing-mass-name { font-size: 14px; }
-          .landing-mass-sub, .landing-time { font-size: 12px; }
-          .landing-time { padding: 6px 10px; }
+          .landing-reading-card { margin-top: 0; padding: 22px; border-radius: 20px; }
+          .landing-reading-title { font-size: 21px; }
+          .landing-reading-content { font-size: 14px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .landing-page *, .landing-page *::before, .landing-page *::after { transition: none !important; }
@@ -313,28 +331,22 @@ export function HomePage() {
             </div>
           </div>
 
-          <section className="landing-live-card" aria-labelledby="landing-live-title">
-            <div className="landing-live-head">
-              <span id="landing-live-title">{t.liveMass}</span>
-              <span className="landing-status"><i className="landing-status-dot" aria-hidden="true" />{t.now}</span>
-            </div>
-            {loading && churches.length === 0 ? (
-              <p className="landing-live-empty" role="status">{t.loading}</p>
-            ) : error && churches.length === 0 ? (
-              <p className="landing-live-empty" role="status">{t.loadError}</p>
-            ) : activeMasses.length ? (
-              activeMasses.map(({ church, alert }) => (
-                <Link className="landing-mass-row" to={`/map/church/${church.id}`} key={church.id}>
-                  <span className="landing-mass-info">
-                    <span className="landing-mass-name">{lang === 'th' ? church.name : church.nameEn || church.name}</span>
-                    <span className="landing-mass-sub">{lang === 'th' ? church.district : church.province || church.district}</span>
-                  </span>
-                  {alert.time && <span className="landing-time">{alert.time} {lang === 'th' ? 'น.' : ''}</span>}
-                </Link>
-              ))
-            ) : (
-              <p className="landing-live-empty" role="status">{t.empty}</p>
-            )}
+          <section className="landing-reading-card" aria-labelledby="landing-reading-title">
+            <p className="landing-reading-eyebrow">{lang === 'th' ? 'พระวาจาประจำวัน' : 'Daily Reading'}</p>
+            {dailyLoading ? (
+              <p className="landing-reading-state" role="status">{lang === 'th' ? 'กำลังโหลดพระวาจาประจำวัน...' : 'Loading today’s reading...'}</p>
+            ) : dailyError ? (
+              <p className="landing-reading-state" role="status">{lang === 'th' ? 'ยังโหลดพระวาจาประจำวันไม่ได้' : 'Today’s reading could not be loaded'}</p>
+            ) : dailyReading ? (
+              <>
+                <h2 className="landing-reading-title" id="landing-reading-title">{dailyReading.title}</h2>
+                <p className="landing-reading-date">{dailyReading.readingDate}</p>
+                <p className="landing-reading-content">{dailyReading.content}</p>
+                <a className="landing-reading-source" href={dailyReading.sourceUrl} target="_blank" rel="noreferrer">
+                  {lang === 'th' ? 'อ่านต่อที่เว็บไซต์ต้นทาง' : 'Read at the original source'} ↗
+                </a>
+              </>
+            ) : null}
           </section>
         </section>
       </div>
