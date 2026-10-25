@@ -115,6 +115,7 @@ export function MapPage() {
               {showUserMenu && (
                 <div className="map-user-dropdown">
                   <Link to="/" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{tm.home}</Link>
+                  <Link to="/profile" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{lang === 'th' ? 'โปรไฟล์ของฉัน' : 'My profile'}</Link>
                   <Link to="/admin" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{lang === 'th' ? 'จัดการวัด' : 'Manage churches'}</Link>
                   <button
                     type="button"
