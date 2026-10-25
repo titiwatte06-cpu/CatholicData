@@ -19,14 +19,31 @@ export function RegionFilter({
   selected,
   onToggle,
   onReset,
+  onSelect,
   lang,
 }: {
   selected: Set<Region>
   onToggle: (region: Region) => void
   onReset: () => void
+  onSelect: (region: Region | null) => void
   lang: 'th' | 'en'
 }) {
   return (
+    <>
+    <label className="region-select-label" htmlFor="map-region-select">
+      {lang === 'th' ? 'เลือกเขตปกครอง' : 'Choose a diocese'}
+    </label>
+    <select
+      id="map-region-select"
+      className="region-select"
+      value={selected.size === 1 ? [...selected][0] : ''}
+      onChange={(event) => onSelect((event.target.value || null) as Region | null)}
+    >
+      <option value="">{lang === 'th' ? 'ทุกภาค' : 'All regions'}</option>
+      {(Object.keys(regionLabels) as Region[]).map((region) => (
+        <option key={region} value={region}>{regionLabels[region][lang]}</option>
+      ))}
+    </select>
     <div className="region-filter">
       <button
         type="button"
@@ -48,5 +65,6 @@ export function RegionFilter({
         </button>
       ))}
     </div>
+    </>
   )
 }

@@ -41,6 +41,7 @@
 }
 
 .map-church-directory { display: none; }
+.region-select-label, .region-select { display: none; }
 
 .map-church-select-label {
   display: block;
@@ -83,6 +84,13 @@
 .map-admin-link {
   min-width: 40px;
   min-height: 40px;
+}
+
+.map-header .map-admin-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .map-wrap .leaflet-control-zoom {
@@ -215,8 +223,47 @@
     box-shadow: 0 12px 36px rgb(20 33 61 / 14%);
   }
 
-  .map-sidebar.is-collapsed { max-height: none; overflow: visible; }
-  .map-sheet-handle { display: none; }
+  .map-sidebar.is-collapsed { max-height: 64px; overflow: hidden; padding: 10px 16px; }
+  .map-sidebar.is-collapsed > :not(.map-sheet-handle) { display: none; }
+  .map-sheet-handle {
+    display: grid;
+    width: 44px;
+    height: 26px;
+    margin: -4px auto 8px;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    border-radius: 999px;
+    background: #eef1f6;
+    cursor: pointer;
+  }
+  .map-sheet-handle::after {
+    width: 9px;
+    height: 9px;
+    border-right: 2px solid #35415b;
+    border-bottom: 2px solid #35415b;
+    content: '';
+    transform: rotate(45deg) translate(-2px, -2px);
+  }
+  .map-sidebar.is-collapsed .map-sheet-handle::after {
+    transform: rotate(225deg) translate(-2px, -2px);
+  }
+  .map-layout.is-map-expanded .map-wrap {
+    height: 100svh;
+    max-height: none;
+    margin-top: -78px;
+    margin-bottom: 0;
+  }
+  .map-layout.is-map-expanded .map-sidebar {
+    position: fixed;
+    z-index: 1100;
+    right: 16px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: 16px;
+    width: auto;
+    max-height: 64px;
+    padding: 10px 16px;
+  }
   .map-sidebar-heading { margin: 0 0 18px; padding: 0; border: 0; }
   .map-sidebar-eyebrow {
     margin-bottom: 5px;
@@ -232,7 +279,9 @@
   .map-control-heading { gap: 6px; margin: 0 0 8px; }
   .map-control-index { display: none; }
   .map-control-heading h2 { color: #5b6478; font-size: 14px; font-weight: 500; }
-  .region-filter { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .map-page .region-filter { display: none; }
+  .map-page .region-select-label { display: block; margin: 0 2px 6px; color: #5b6478; font-size: 14px; }
+  .map-page .region-select { display: block; width: 100%; min-height: 48px; padding: 10px 42px 10px 14px; border: 1px solid #d5dae5; border-radius: 13px; background: #fff; color: #14213d; font: inherit; font-size: 16px; }
   .region-chip { width: 100%; min-height: 46px; padding: 10px 16px; border-width: 1px; border-radius: 13px; color: #14213d; font-size: 14px; text-align: left; }
   .region-chip.is-active { background: #14213d; border-color: #14213d; }
   .map-sidebar input.map-search-input { height: 52px; border: 1px solid #d5dae5; border-radius: 13px; background: #f4f6fa; padding-left: 16px; font-size: 16px; }
@@ -240,7 +289,7 @@
   .map-search-clear { width: 40px; height: 40px; }
   .live-mass-filter { min-height: 50px; margin: -2px 0 4px; border-radius: 13px; font-size: 15px; }
   .map-sidebar-results, .sidebar-hint, .map-manage-section { display: none; }
-  .map-church-directory { display: grid; gap: 14px; }
+  .map-church-directory { display: none; }
   .map-directory-card {
     display: flex;
     width: 100%;
@@ -268,14 +317,17 @@
   .map-directory-empty { margin: 0; padding: 20px; border-radius: 16px; background: white; color: #5b6478; text-align: center; font-size: 16px; }
 
   .church-popcard {
-    position: relative;
-    z-index: 2;
-    inset: auto;
+    position: fixed;
+    z-index: 1200;
+    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: 16px;
     width: auto;
-    max-height: none;
-    overflow: visible;
+    max-height: min(58svh, 560px);
+    overflow: auto;
     padding: 18px;
     border-radius: 22px;
+    box-shadow: 0 12px 36px rgb(20 33 61 / 24%);
   }
   .church-popcard-close { width: 44px; height: 44px; }
   .map-wrap .leaflet-top.leaflet-left { top: 12px; right: 12px; bottom: auto; left: auto; }

@@ -142,7 +142,7 @@ export function MapPage() {
           </button>
         </nav>
       </header>
-      <div className="map-layout">
+      <div className={`map-layout${!sheetOpen ? ' is-map-expanded' : ''}`}>
         <aside className={`map-sidebar${sheetOpen ? '' : ' is-collapsed'}${panelHidden ? ' is-panel-hidden' : ''}`}>
           <button
             type="button"
@@ -179,6 +179,7 @@ export function MapPage() {
               selected={selectedRegions}
               onToggle={toggleRegion}
               onReset={() => setSelectedRegions(new Set())}
+              onSelect={(region) => setSelectedRegions(region ? new Set([region]) : new Set())}
               lang={lang}
             />
           </section>
