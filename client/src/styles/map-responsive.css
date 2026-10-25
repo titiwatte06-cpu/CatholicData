@@ -297,7 +297,7 @@
  
 .sidebar-action-add {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--marian-blue, #14213d);
 }
  
 .sidebar-action-add:hover {

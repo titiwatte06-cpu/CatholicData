@@ -378,8 +378,8 @@
   padding: 12px;
   border: 2px solid var(--accent);
   border-radius: 999px;
-  background: transparent;
-  color: var(--accent);
+  background: var(--accent);
+  color: var(--marian-blue, #14213d);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -387,8 +387,8 @@
 }
  
 .edit-detail-btn:hover {
-  background: var(--accent);
-  color: white;
+  background: var(--accent-dark);
+  color: var(--marian-blue, #14213d);
 }
  
 .map-logo {

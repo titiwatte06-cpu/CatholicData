@@ -133,7 +133,7 @@
  
 .detail-label {
   margin-bottom: 6px;
-  color: var(--accent);
+  color: var(--marian-blue, #14213d);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -235,7 +235,7 @@
   padding: 15px 14px;
   border-radius: 999px;
   background: var(--accent);
-  color: #ffffff;
+  color: var(--marian-blue, #14213d);
   font-size: 16px;
   font-weight: 700;
   text-decoration: none;
@@ -256,6 +256,7 @@
 
 .nav-btn:hover {
   background: var(--accent-dark);
+  color: var(--marian-blue, #14213d);
   transform: translateY(-1px);
 }
 
