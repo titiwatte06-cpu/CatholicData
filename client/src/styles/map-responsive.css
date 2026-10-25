@@ -195,7 +195,7 @@
   height: 28px;
   border: 3px solid white;
   border-radius: 50% 50% 50% 0;
-  background: var(--accent);
+  background: var(--marker-accent, var(--accent));
   box-shadow: 0 4px 10px rgba(36, 26, 26, 0.45);
   transform: rotate(-45deg);
 }
@@ -224,7 +224,7 @@
 .marker-cluster.marker-cluster-small div,
 .marker-cluster.marker-cluster-medium div,
 .marker-cluster.marker-cluster-large div {
-  background: var(--accent);
+  background: var(--marker-accent, var(--accent));
   color: #ffffff;
   border: 3px solid #ffffff;
   box-shadow: 0 4px 10px rgba(36, 26, 26, 0.4);
@@ -239,7 +239,7 @@
 }
 
 .marker-cluster.marker-cluster-medium div {
-  background: var(--accent-dark);
+  background: var(--marker-accent, var(--accent-dark));
 }
 
 .marker-cluster.marker-cluster-large div {
