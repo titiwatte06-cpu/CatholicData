@@ -99,6 +99,7 @@ export function MapPage() {
         <Link to="/" className="map-brand"><img src="/logo.svg" alt="โลโก้" className="map-logo" /><strong>วัดคาทอลิก</strong></Link>
         <nav className="map-header-actions">
           {!isAuthenticated && <Link to="/" className="map-home-link">{tm.home}</Link>}
+          {isAuthenticated && <Link to="/admin" className="map-admin-link">{lang === 'th' ? 'จัดการวัด' : 'Manage churches'}</Link>}
           {isAuthenticated ? (
             <div className="map-user-menu" ref={userMenuRef}>
               <button
