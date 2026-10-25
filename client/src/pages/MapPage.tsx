@@ -99,7 +99,6 @@ export function MapPage() {
         <Link to="/" className="map-brand"><img src="/logo.svg" alt="โลโก้" className="map-logo" /><strong>วัดคาทอลิก</strong></Link>
         <nav className="map-header-actions">
           {!isAuthenticated && <Link to="/" className="map-home-link">{tm.home}</Link>}
-          {isAuthenticated && <Link to="/admin" className="map-admin-link">{lang === 'th' ? 'จัดการวัด' : 'Manage churches'}</Link>}
           {isAuthenticated ? (
             <div className="map-user-menu" ref={userMenuRef}>
               <button
@@ -116,7 +115,7 @@ export function MapPage() {
               {showUserMenu && (
                 <div className="map-user-dropdown">
                   <Link to="/" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{tm.home}</Link>
-                  <Link to="/admin" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{tm.admin}</Link>
+                  <Link to="/admin" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{lang === 'th' ? 'จัดการวัด' : 'Manage churches'}</Link>
                   <button
                     type="button"
                     className="map-user-dropdown-item"
