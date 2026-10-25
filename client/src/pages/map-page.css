@@ -331,6 +331,8 @@
   }
   .church-popcard-close { width: 44px; height: 44px; }
   .map-wrap .leaflet-top.leaflet-left { top: 12px; right: 12px; bottom: auto; left: auto; }
+  .map-wrap .leaflet-bottom.leaflet-right { right: 12px; bottom: 12px; }
+  .map-layout.is-map-expanded .map-wrap .leaflet-bottom.leaflet-right { bottom: 84px; }
 }
 
 @media (max-width: 380px) {
