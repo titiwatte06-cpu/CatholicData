@@ -274,7 +274,19 @@ export function HomePage() {
         }
         @media (max-width: 860px) {
           .landing-page { padding: 20px; }
-          .landing-nav { display: none; }
+          .landing-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: 12px; }
+          .landing-nav {
+            display: flex;
+            grid-column: 1 / -1;
+            justify-content: space-around;
+            gap: 8px;
+            width: 100%;
+            padding: 11px 8px;
+            border: 1px solid var(--landing-line);
+            border-radius: 14px;
+            background: var(--landing-white);
+            font-size: 14px;
+          }
           .landing-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; min-height: 0; margin: 40px auto 0; }
           .landing-title { font-size: clamp(44px, 7.4vw, 56px); }
           .landing-description { font-size: 18px; }
@@ -285,7 +297,8 @@ export function HomePage() {
           .landing-header { gap: 12px; }
           .landing-brand { gap: 9px; font-size: 16px; }
           .landing-lang { padding: 7px 14px; }
-          .landing-hero { margin-top: 36px; }
+          .landing-nav { gap: 6px; padding: 10px 4px; font-size: 13px; }
+          .landing-hero { margin-top: 24px; }
           .landing-title { font-size: clamp(36px, 10vw, 44px); letter-spacing: -.03em; }
           .landing-description { margin-bottom: 24px; font-size: 16px; }
           .landing-cta { display: grid; grid-template-columns: 1fr; gap: 10px; }
