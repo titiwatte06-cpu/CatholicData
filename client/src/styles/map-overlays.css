@@ -232,7 +232,7 @@
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 999px;
   background: #fff;
-  color: #1f1f1f;
+  color: var(--marian-blue, #14213d);
   font: inherit;
   font-weight: 600;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
@@ -240,7 +240,7 @@
 }
 
 .map-panel-reveal svg {
-  color: #a52a3a;
+  color: var(--marian-blue, #14213d);
 }
 
 .map-panel-reveal:hover {
