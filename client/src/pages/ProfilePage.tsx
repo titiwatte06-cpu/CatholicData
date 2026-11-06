@@ -14,7 +14,7 @@ type AccountUser = {
 type CheckIn = {
   churchId: string
   checkedInAt: string
-  church: { name?: string; district?: string; province?: string } | null
+  church: { name?: string; district?: string; province?: string; imageUrl?: string } | null
 }
 
 function CrossIcon() {
@@ -121,7 +121,12 @@ export function ProfilePage() {
           <div className="profile-stamps">
             {stampSlots.map((checkin, index) => (
               <div className={`profile-stamp${checkin ? '' : ' is-empty'}`} key={checkin?.churchId || `empty-${index}`}>
-                <div className="profile-stamp-mark"><CrossIcon /></div>
+                <div className="profile-stamp-mark">
+                  {checkin?.church?.imageUrl
+                    ? <img src={checkin.church.imageUrl} alt="" />
+                    : <CrossIcon />}
+                  {checkin && <span className="profile-stamp-checkin-label">CHECK-IN</span>}
+                </div>
                 <strong>{checkin?.church?.name || (isThai ? 'วัดที่ยังไม่ได้เช็คอิน' : 'Available stamp')}</strong>
                 <small>{checkin ? [checkin.church?.district, checkin.church?.province].filter(Boolean).join(' · ') : (isThai ? 'ยังไม่ได้ไป' : 'Not visited yet')}</small>
               </div>

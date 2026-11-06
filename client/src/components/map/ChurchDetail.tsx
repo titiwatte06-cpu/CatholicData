@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Church } from '../../data/churches'
 import { getDistrictLabel, getMassDayLabel, getOpenHoursLabel } from '../../data/churches'
 import { churchPlaceholderImage, isSafeUrl } from '../../pages/map/mapUtils'
+import { API_BASE_URL } from '../../config'
 
 const detailText = {
   th: {
@@ -47,9 +49,12 @@ function FacebookLink({ url, lang }: { url?: string; lang: 'th' | 'en' }) {
 
 export function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { church: Church; onEditClick: () => void; canEditDirectly: boolean; lang: 'th' | 'en' }) {
   const td = detailText[lang]
+  const navigate = useNavigate()
   const primaryName = lang === 'th' ? church.name : church.nameEn
   const secondaryName = lang === 'th' ? church.nameEn : null
   const [imageExpanded, setImageExpanded] = useState(false)
+  const [checkInState, setCheckInState] = useState<'unknown' | 'available' | 'checked-in' | 'saving'>('unknown')
+  const [checkInError, setCheckInError] = useState('')
 
   useEffect(() => {
     if (!imageExpanded) return
@@ -59,6 +64,55 @@ export function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { c
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [imageExpanded])
+
+  useEffect(() => {
+    let cancelled = false
+    setCheckInState('unknown')
+    setCheckInError('')
+    fetch(`${API_BASE_URL}/api/account/checkins/${encodeURIComponent(church.id)}`, { credentials: 'include' })
+      .then((response) => {
+        if (!cancelled) setCheckInState(response.ok ? 'checked-in' : 'available')
+      })
+      .catch(() => {
+        if (!cancelled) setCheckInState('available')
+      })
+    return () => { cancelled = true }
+  }, [church.id])
+
+  const handleCheckIn = async () => {
+    if (checkInState === 'saving') return
+    setCheckInState('saving')
+    setCheckInError('')
+    try {
+      if (checkInState === 'checked-in') {
+        const response = await fetch(`${API_BASE_URL}/api/account/checkins/${encodeURIComponent(church.id)}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        })
+        if (response.status === 401) {
+          navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
+          return
+        }
+        if (!response.ok && response.status !== 404) throw new Error('check-in removal failed')
+        setCheckInState('available')
+        return
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/account/checkins/${encodeURIComponent(church.id)}`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (response.status === 401) {
+        navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`)
+        return
+      }
+      if (!response.ok && response.status !== 409) throw new Error('check-in failed')
+      setCheckInState('checked-in')
+    } catch {
+      setCheckInState('available')
+      setCheckInError(lang === 'th' ? 'เช็คอินไม่สำเร็จ กรุณาลองใหม่' : 'Check-in failed. Please try again.')
+    }
+  }
 
   return (
     <section className="detail">
@@ -118,6 +172,11 @@ export function ChurchDetail({ church, onEditClick, canEditDirectly, lang }: { c
         )}
       </InfoBlock>
       <button type="button" className="edit-detail-btn" onClick={onEditClick}>✎ {canEditDirectly ? td.editDirect : td.editRequest}</button>
+      <button type="button" className={`checkin-stamp-button${checkInState === 'checked-in' ? ' is-checked' : ''}`} onClick={() => void handleCheckIn()} disabled={checkInState === 'unknown' || checkInState === 'saving'}>
+        <span className="checkin-stamp-icon">✚</span>
+        <span>{checkInState === 'checked-in' ? 'CHECK-IN แล้ว · กดเพื่อยกเลิก' : checkInState === 'saving' ? 'กำลังบันทึก…' : 'รับตราประทับ / CHECK-IN'}</span>
+      </button>
+      {checkInError && <p className="checkin-error" role="alert">{checkInError}</p>}
       <a className="nav-btn" href={`https://www.google.com/maps/dir/?api=1&destination=${church.lat},${church.lng}`} target="_blank" rel="noreferrer noopener">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 10.2c0 5.2-8.2 11.3-8.2 11.3S3.8 15.4 3.8 10.2a8.2 8.2 0 1 1 16.4 0Z" /><circle cx="12" cy="10" r="2.8" /></svg>
         <span>{td.directions}</span>

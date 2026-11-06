@@ -296,4 +296,56 @@
   background: var(--highlight);
   box-shadow: 0 0 0 4px rgba(242, 169, 59, 0.3);   /* เปล่งแสงเหมือนเปลวเทียน */
 }
+
+.checkin-stamp-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 14px 0 8px;
+  padding: 14px 18px;
+  border: 2px solid var(--highlight);
+  border-radius: 999px;
+  background: var(--highlight);
+  color: var(--night);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.checkin-stamp-button:hover:not(:disabled) {
+  background: #e4b85d;
+  border-color: #e4b85d;
+}
+
+.checkin-stamp-button:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.checkin-stamp-button.is-checked {
+  border-color: #2f7d4b;
+  background: #e7f5eb;
+  color: #24643a;
+}
+
+.checkin-stamp-icon {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.checkin-error {
+  margin: 0 0 10px;
+  color: #b42318;
+  font-size: 13px;
+  text-align: center;
+}
  

@@ -291,6 +291,65 @@ textarea:focus-visible {
   border-width: 1px;
 }
 
+/* Church detail actions: edit -> stamp -> directions. */
+.detail .edit-detail-btn {
+  border-color: #88b8cf;
+  background: #88b8cf;
+  color: #14213d;
+}
+
+.detail .edit-detail-btn:hover {
+  border-color: #73a8c1;
+  background: #73a8c1;
+}
+
+.detail .checkin-stamp-button {
+  margin-top: 14px;
+  margin-bottom: 0;
+  background: #cda845;
+  border-color: #cda845;
+  color: #14213d;
+}
+
+.detail .checkin-stamp-button:hover:not(:disabled) {
+  background: #b99134;
+  border-color: #b99134;
+}
+
+.detail .nav-btn {
+  margin-top: 14px;
+  background: #c7e4f2;
+  color: #14213d;
+  box-shadow: 0 8px 20px rgba(93, 143, 169, 0.2);
+}
+
+.detail .nav-btn:hover {
+  background: #add5e8;
+  color: #14213d;
+}
+
+/* Keep the action order independent from the JSX order. */
+.detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail .edit-detail-btn {
+  order: 10;
+}
+
+.detail .nav-btn {
+  order: 20;
+}
+
+.detail .checkin-stamp-button {
+  order: 30;
+}
+
+.detail .checkin-error {
+  order: 31;
+}
+
 .modal-box {
   border: 1px solid rgba(232, 223, 210, 0.8);
   box-shadow: var(--shadow-float);

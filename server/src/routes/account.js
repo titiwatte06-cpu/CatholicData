@@ -292,6 +292,13 @@ router.get('/checkins', requireUser, async (req, res) => {
   }
 })
 
+router.get('/checkins/:churchId', requireUser, async (req, res) => {
+  const churchId = typeof req.params.churchId === 'string' ? req.params.churchId.trim() : ''
+  const checkin = await CheckIn.findOne({ userId: req.user.id, churchId }).lean()
+  if (!checkin) return res.status(404).json({ checkedIn: false })
+  return res.json({ checkedIn: true, checkin })
+})
+
 router.post('/checkins/:churchId', requireUser, async (req, res) => {
   const churchId = typeof req.params.churchId === 'string' ? req.params.churchId.trim() : ''
   if (!churchId) return res.status(400).json({ message: 'Church id is required' })
