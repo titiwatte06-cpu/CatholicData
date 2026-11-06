@@ -10,6 +10,7 @@ import { useMinuteTick } from '../hooks/useMinuteTick'
 import { ChurchDetail } from '../components/map/ChurchDetail'
 import { AddChurchModal, DeleteChurchModal, EditChurchModal } from '../components/map/ChurchModals'
 import { mapText } from './map/mapText'
+import { API_BASE_URL } from '../config'
 import type { Region } from '../data/churches'
 import './map-page.css'
 
@@ -32,11 +33,26 @@ export function MapPage() {
   const [query, setQuery] = useState('')
   const [activeModal, setActiveModal] = useState<'add' | 'delete' | 'edit' | null>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [userAvatar, setUserAvatar] = useState('')
   const userMenuRef = useRef<HTMLDivElement>(null)
   const now = useMinuteTick()
   const isMobile = useMediaQuery('(max-width: 1024px)')
 
   const { churches, loading: churchesLoading, error: churchesError, refetch: fetchChurches } = useChurches()
+
+  useEffect(() => {
+    let active = true
+    fetch(`${API_BASE_URL}/api/account/me`, { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) return
+        const payload = await response.json() as { user?: { avatar?: string } }
+        if (active) setUserAvatar(payload.user?.avatar || '')
+      })
+      .catch(() => {
+        if (active) setUserAvatar('')
+      })
+    return () => { active = false }
+  }, [])
 
   const [selectedRegions, setSelectedRegions] = useState<Set<Region>>(new Set())
   const [showLiveMassOnly, setShowLiveMassOnly] = useState(false)
@@ -108,9 +124,11 @@ export function MapPage() {
                 aria-label="เมนูผู้ใช้"
                 aria-expanded={showUserMenu}
               >
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                  <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.3 0-9.8 1.6-9.8 4.9v2.5h19.6v-2.5c0-3.3-6.5-4.9-9.8-4.9z" fill="currentColor" />
-                </svg>
+                {userAvatar
+                  ? <img className="map-user-avatar-image" src={userAvatar} alt="" />
+                  : <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.3 0-9.8 1.6-9.8 4.9v2.5h19.6v-2.5c0-3.3-6.5-4.9-9.8-4.9z" fill="currentColor" />
+                  </svg>}
               </button>
               {showUserMenu && (
                 <div className="map-user-dropdown">

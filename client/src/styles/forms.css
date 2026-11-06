@@ -306,13 +306,24 @@
 }
  
 .map-user-avatar {
+   display: grid;
+   place-items: center;
   width: 38px;
   height: 38px;
+   padding: 0;
   border-radius: 50%;
   background-color: var(--accent-soft);
   border: 2px solid var(--highlight);
+   overflow: hidden;
   cursor: pointer;
 }
+
+ .map-user-avatar-image {
+   display: block;
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+ }
  
 .map-user-dropdown {
   position: absolute;
