@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
     minlength: 1,
     maxlength: 50,
   },
+  avatar: {
+    type: String,
+    default: '',
+  },
   privacy: {
     stampBookVisible: {
       type: Boolean,

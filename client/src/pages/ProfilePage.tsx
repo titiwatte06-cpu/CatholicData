@@ -7,6 +7,7 @@ import './profile-page.css'
 type AccountUser = {
   username: string
   displayName: string
+  avatar?: string
   privacy?: { stampBookVisible?: boolean }
   joinedAt?: string
 }
@@ -30,6 +31,11 @@ export function ProfilePage() {
   const [isPublic, setIsPublic] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [editOpen, setEditOpen] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editAvatar, setEditAvatar] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState('')
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -45,6 +51,8 @@ export function ProfilePage() {
         setUser(userPayload.user)
         setCheckins(checkinsPayload.checkins)
         setIsPublic(userPayload.user.privacy?.stampBookVisible ?? false)
+        setEditName(userPayload.user.displayName)
+        setEditAvatar(userPayload.user.avatar || '')
       } catch {
         setError(isThai ? 'กรุณาเข้าสู่ระบบเพื่อดูโปรไฟล์' : 'Please log in to view your profile')
       } finally {
@@ -83,6 +91,57 @@ export function ProfilePage() {
     </main>
   )
 
+  const handleAvatarFile = (file?: File) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setEditError(isThai ? 'กรุณาเลือกไฟล์รูปภาพ' : 'Please choose an image file')
+      return
+    }
+    if (file.size > 1_000_000) {
+      setEditError(isThai ? 'รูปภาพต้องมีขนาดไม่เกิน 1 MB' : 'Image must be smaller than 1 MB')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setEditAvatar(reader.result)
+        setEditError('')
+      }
+    }
+    reader.onerror = () => setEditError(isThai ? 'อ่านไฟล์รูปภาพไม่สำเร็จ' : 'Unable to read image file')
+    reader.readAsDataURL(file)
+  }
+
+  const handleProfileSave = async () => {
+    const displayName = editName.trim()
+    if (!displayName) {
+      setEditError(isThai ? 'กรุณากรอกชื่อ' : 'Please enter your name')
+      return
+    }
+
+    setEditSaving(true)
+    setEditError('')
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/account/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ displayName, avatar: editAvatar }),
+      })
+      const payload = await response.json() as { user?: AccountUser; message?: string }
+      if (!response.ok || !payload.user) throw new Error(payload.message || 'profile update failed')
+      setUser(payload.user)
+      setEditName(payload.user.displayName)
+      setEditAvatar(payload.user.avatar || '')
+      setEditOpen(false)
+    } catch (saveError) {
+      setEditError(saveError instanceof Error ? saveError.message : (isThai ? 'บันทึกโปรไฟล์ไม่สำเร็จ' : 'Unable to save profile'))
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
   const stampSlots = Array.from({ length: Math.max(8, checkins.length) }, (_, index) => checkins[index] || null)
 
   return (
@@ -97,10 +156,15 @@ export function ProfilePage() {
 
       <section className="profile-hero" aria-labelledby="profile-title">
         <div className="profile-avatar-wrap">
-          <div className="profile-avatar">{user.displayName.slice(0, 1).toUpperCase()}</div>
+          {user.avatar
+            ? <img className="profile-avatar profile-avatar-image" src={user.avatar} alt="" />
+            : <div className="profile-avatar">{user.displayName.slice(0, 1).toUpperCase()}</div>}
         </div>
         <div className="profile-identity">
           <h1 id="profile-title">{user.displayName}</h1>
+          <button type="button" className="profile-edit-button" onClick={() => { setEditError(''); setEditOpen(true) }}>
+            {isThai ? 'แก้ไขโปรไฟล์' : 'Edit profile'}
+          </button>
           <p>@{user.username} · {user.joinedAt ? new Date(user.joinedAt).toLocaleDateString(isThai ? 'th-TH' : 'en-US', { year: 'numeric', month: 'long' }) : ''}</p>
         </div>
         <div className="profile-stats">
@@ -108,6 +172,28 @@ export function ProfilePage() {
           <div><strong>{checkins.length}</strong><span>{isThai ? 'ตราประทับ' : 'Stamps'}</span></div>
         </div>
       </section>
+
+      {editOpen && (
+        <div className="profile-edit-overlay" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setEditOpen(false) }}>
+          <section className="profile-edit-modal" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title">
+            <h2 id="profile-edit-title">{isThai ? 'แก้ไขโปรไฟล์' : 'Edit profile'}</h2>
+            <label>
+              {isThai ? 'ชื่อ' : 'Name'}
+              <input type="text" value={editName} maxLength={50} onChange={(event) => setEditName(event.target.value)} />
+            </label>
+            <label>
+              {isThai ? 'รูปโปรไฟล์' : 'Profile image'}
+              <input type="file" accept="image/*" onChange={(event) => handleAvatarFile(event.target.files?.[0])} />
+            </label>
+            {editAvatar && <img className="profile-edit-preview" src={editAvatar} alt={isThai ? 'ตัวอย่างรูปโปรไฟล์' : 'Profile preview'} />}
+            {editError && <p className="profile-edit-error">{editError}</p>}
+            <div className="profile-edit-actions">
+              <button type="button" className="profile-edit-cancel" onClick={() => setEditOpen(false)} disabled={editSaving}>{isThai ? 'ยกเลิก' : 'Cancel'}</button>
+              <button type="button" className="profile-edit-save" onClick={() => void handleProfileSave()} disabled={editSaving}>{editSaving ? (isThai ? 'กำลังบันทึก...' : 'Saving...') : (isThai ? 'บันทึก' : 'Save')}</button>
+            </div>
+          </section>
+        </div>
+      )}
 
       <div className="profile-main">
         <section className="profile-card profile-stamp-card" aria-labelledby="stamp-title">

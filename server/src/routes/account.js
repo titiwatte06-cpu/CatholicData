@@ -97,6 +97,7 @@ function publicUser(user) {
     email: user.email,
     username: user.username,
     displayName: user.displayName,
+    avatar: user.avatar || '',
     role: user.role,
     privacy: user.privacy,
     consentAt: user.consentAt,
@@ -205,6 +206,7 @@ router.get('/me', requireUser, (req, res) => {
 router.patch('/profile', requireUser, async (req, res) => {
   const displayName = typeof req.body.displayName === 'string' ? req.body.displayName.trim() : undefined
   const username = req.body.username === undefined ? undefined : normalizeUsername(req.body.username)
+  const avatar = req.body.avatar === undefined ? undefined : (typeof req.body.avatar === 'string' ? req.body.avatar.trim() : '')
 
   if (displayName !== undefined && (displayName.length < 1 || displayName.length > 50)) {
     return res.status(400).json({ message: 'displayName must be 1-50 characters', field: 'displayName' })
@@ -212,7 +214,13 @@ router.patch('/profile', requireUser, async (req, res) => {
   if (username !== undefined && !usernamePattern.test(username)) {
     return res.status(400).json({ message: 'Invalid username', field: 'username' })
   }
-  if (displayName === undefined && username === undefined) {
+  if (avatar !== undefined && avatar && !(/^(https?:\/\/|data:image\/)/i.test(avatar))) {
+    return res.status(400).json({ message: 'Invalid avatar image', field: 'avatar' })
+  }
+  if (avatar !== undefined && Buffer.byteLength(avatar, 'utf8') > 1_500_000) {
+    return res.status(413).json({ message: 'Avatar image must be smaller than 1.5MB', field: 'avatar' })
+  }
+  if (displayName === undefined && username === undefined && avatar === undefined) {
     return res.status(400).json({ message: 'No profile fields to update' })
   }
 
@@ -220,6 +228,7 @@ router.patch('/profile', requireUser, async (req, res) => {
     const update = {}
     if (displayName !== undefined) update.displayName = displayName
     if (username !== undefined) update.username = username
+    if (avatar !== undefined) update.avatar = avatar
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { $set: update },

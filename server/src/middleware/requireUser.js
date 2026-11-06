@@ -18,7 +18,7 @@ export async function requireUser(req, res, next) {
       return res.status(401).json({ message: 'เซสชันไม่ถูกต้อง' })
     }
 
-    const user = await User.findById(payload.sub).select('_id email username displayName role privacy consentAt consentVersion createdAt')
+    const user = await User.findById(payload.sub).select('_id email username displayName avatar role privacy consentAt consentVersion createdAt')
     if (!user) return res.status(401).json({ message: 'ไม่พบสมาชิกนี้แล้ว' })
 
     req.user = { id: user._id.toString(), role: user.role }
