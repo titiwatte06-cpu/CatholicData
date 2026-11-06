@@ -5,12 +5,16 @@ import compression from 'compression'
 
 import churchesRouter from './routes/churches.js'
 import authRouter from './routes/auth.js'
+import accountRouter from './routes/account.js'
 import churchRequestsRouter from './routes/churchRequests.js'
 import externalContentRouter from './routes/externalContent.js'
 import { getCacheHealth } from './services/churchCache.js'
 import mongoose from 'mongoose'
 
 const app = express()
+
+// Render sits behind a reverse proxy; this lets rate limiting use the real client IP.
+app.set('trust proxy', 1)
 
 app.use(cors({
   origin: [process.env.CLIENT_URL, 'http://localhost:5173'].filter(Boolean),
@@ -31,6 +35,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/churches', churchesRouter)
 app.use('/api/church-requests', churchRequestsRouter)
 app.use('/api/auth', authRouter)
+app.use('/api/account', accountRouter)
 app.use('/api', externalContentRouter)
 
 export default app

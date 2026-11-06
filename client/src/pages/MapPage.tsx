@@ -132,7 +132,7 @@ export function MapPage() {
               )}
             </div>
           ) : (
-            <Link to="/admin/login" className="map-admin-link">{tm.admin}</Link>
+            <Link to="/login" className="map-admin-link">{tm.admin}</Link>
           )}
           <button
             type="button"

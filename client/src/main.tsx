@@ -14,6 +14,7 @@ import AdminDashboard from './admin/AdminDashboard'
 import { RequireAdminAuth } from './admin/RequireAdminAuth'
 import { LanguageProvider } from './LanguageContext'
 import { ProfilePage } from './pages/ProfilePage'
+import { AuthPage } from './pages/AuthPage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -24,7 +25,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/" element={<HomePage />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/map/church/:churchId" element={<MapPage />} />
-            <Route path="/profile" element={<RequireAdminAuth><ProfilePage /></RequireAdminAuth>} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/login" element={<AuthPage />} />
 
             {/* หน้าอื่นยังใช้ ContentPage เดิม */}
             <Route path="/about" element={<ContentPage title="เกี่ยวกับเรา" english="About Us" />} />
