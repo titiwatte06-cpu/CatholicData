@@ -27,13 +27,14 @@ function useMediaQuery(query: string) {
 export function MapPage() {
   const { churchId } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated, logout } = useAdminAuth()
+  const { isAuthenticated: isAdminAuthenticated, logout: logoutAdmin } = useAdminAuth()
   const { lang, toggleLang } = useLanguage()
   const tm = mapText[lang]
   const [query, setQuery] = useState('')
   const [activeModal, setActiveModal] = useState<'add' | 'delete' | 'edit' | null>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [userAvatar, setUserAvatar] = useState('')
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const now = useMinuteTick()
   const isMobile = useMediaQuery('(max-width: 1024px)')
@@ -44,15 +45,34 @@ export function MapPage() {
     let active = true
     fetch(`${API_BASE_URL}/api/account/me`, { credentials: 'include' })
       .then(async (response) => {
-        if (!response.ok) return
+        if (!response.ok) {
+          if (active) setIsUserAuthenticated(false)
+          return
+        }
         const payload = await response.json() as { user?: { avatar?: string } }
-        if (active) setUserAvatar(payload.user?.avatar || '')
+        if (active) {
+          setIsUserAuthenticated(Boolean(payload.user))
+          setUserAvatar(payload.user?.avatar || '')
+        }
       })
       .catch(() => {
-        if (active) setUserAvatar('')
+        if (active) {
+          setIsUserAuthenticated(false)
+          setUserAvatar('')
+        }
       })
     return () => { active = false }
   }, [])
+
+  const isLoggedIn = isAdminAuthenticated || isUserAuthenticated
+
+  const handleLogout = async () => {
+    if (isAdminAuthenticated) await logoutAdmin()
+    await fetch(`${API_BASE_URL}/api/account/logout`, { method: 'POST', credentials: 'include' })
+    setIsUserAuthenticated(false)
+    setUserAvatar('')
+    navigate('/')
+  }
 
   const [selectedRegions, setSelectedRegions] = useState<Set<Region>>(new Set())
   const [showLiveMassOnly, setShowLiveMassOnly] = useState(false)
@@ -114,8 +134,8 @@ export function MapPage() {
       <header className="map-header">
         <Link to="/" className="map-brand"><img src="/logo.svg" alt="โลโก้" className="map-logo" /><strong>วัดคาทอลิก</strong></Link>
         <nav className="map-header-actions">
-          {!isAuthenticated && <Link to="/" className="map-home-link">{tm.home}</Link>}
-          {isAuthenticated ? (
+          {!isLoggedIn && <Link to="/" className="map-home-link">{tm.home}</Link>}
+          {isLoggedIn ? (
             <div className="map-user-menu" ref={userMenuRef}>
               <button
                 type="button"
@@ -134,14 +154,13 @@ export function MapPage() {
                 <div className="map-user-dropdown">
                   <Link to="/" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{tm.home}</Link>
                   <Link to="/profile" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{lang === 'th' ? 'โปรไฟล์ของฉัน' : 'My profile'}</Link>
-                  <Link to="/admin" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{lang === 'th' ? 'จัดการวัด' : 'Manage churches'}</Link>
+                  {isAdminAuthenticated && <Link to="/admin" className="map-user-dropdown-item" onClick={() => setShowUserMenu(false)}>{lang === 'th' ? 'จัดการวัด' : 'Manage churches'}</Link>}
                   <button
                     type="button"
                     className="map-user-dropdown-item"
                     onClick={async () => {
                       setShowUserMenu(false)
-                      await logout()
-                      navigate('/')
+                      await handleLogout()
                     }}
                   >
                     {tm.logout}
@@ -255,7 +274,7 @@ export function MapPage() {
             <span className="live-mass-dot" aria-hidden="true" />
             {lang === 'th' ? 'วัดที่กำลังมีมิสซา' : 'Mass happening now'}
           </button>
-          {isAuthenticated && <section className="map-control-section map-manage-section" aria-labelledby="map-manage-heading">
+          {isAdminAuthenticated && <section className="map-control-section map-manage-section" aria-labelledby="map-manage-heading">
             <div className="map-control-heading">
               <span className="map-control-index">03</span>
               <h2 id="map-manage-heading">{lang === 'th' ? 'จัดการข้อมูล' : 'Church data'}</h2>
@@ -310,7 +329,7 @@ export function MapPage() {
             >
               ×
             </button>
-            <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAuthenticated} lang={lang} />
+            <ChurchDetail church={selectedChurch} onEditClick={() => setActiveModal('edit')} canEditDirectly={isAdminAuthenticated} lang={lang} />
           </aside>
         )}
         <main className="map-wrap">
@@ -342,9 +361,9 @@ export function MapPage() {
           </MapView>
         </main>
       </div>
-      {activeModal === 'add' && <AddChurchModal direct={isAuthenticated} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
-      {activeModal === 'delete' && <DeleteChurchModal direct={isAuthenticated} churches={churches} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
-      {activeModal === 'edit' && selectedChurch && <EditChurchModal direct={isAuthenticated} church={selectedChurch} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
+      {activeModal === 'add' && <AddChurchModal direct={isAdminAuthenticated} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
+      {activeModal === 'delete' && <DeleteChurchModal direct={isAdminAuthenticated} churches={churches} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
+      {activeModal === 'edit' && selectedChurch && <EditChurchModal direct={isAdminAuthenticated} church={selectedChurch} onClose={() => setActiveModal(null)} onSuccess={fetchChurches} />}
     </div>
   )
 }
